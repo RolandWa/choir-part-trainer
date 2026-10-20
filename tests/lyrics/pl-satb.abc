@@ -1,0 +1,17 @@
+% Test: three parts, two numbered verses, a rest at the start of bar 3 (syllables skip rests).
+X:2
+T:Chorał (test)
+M:4/4
+L:1/4
+V:S name="Sopran"
+V:A name="Alt"
+V:B name="Bas" clef=bass
+K:C
+W:1. Chwała na wysokości Bogu, a na ziemi pokój.
+W:2. Święty, święty, święty Pan, pełne niebo chwały Twojej.
+V:S
+E E F G | G F E D | z C D E | D C D C |]
+V:A
+C C C B, | C C C B, | z A, B, C | B, C B, C |]
+V:B
+C, C, F, G, | E, F, G, G, | z A,, G,, C, | G,, C, G,, C, |]

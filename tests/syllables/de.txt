@@ -1,0 +1,79 @@
+# German syllables – 2006 spelling rules: only the last consonant moves to the next syllable (Schwes-ter, Kin-der),
+# except bl br dr fl fr gl gr kl kn kr pl pr tr, sch + l m n r w, zw, spr str (Jung-frau, ent-sprun-gen);
+# ck, ch, sch stay together (Zu-cker); ä ö ü are separate vowels (ge-übt); Latin words keep Latin rules (Ky-ri-e).
+# One word per line, split into syllables with hyphens: the app must split the word exactly like this.
+#   a | b      both splits are accepted (e.g. Polish allows several splits inside consonant groups)
+#   ! a        known limitation: reported, but does not fail the tests
+#   # ...      comment
+Stil-le
+hei-li-ge
+al-les
+ein-sam
+trau-te
+hoch-hei-li-ge
+Kna-be
+lo-cki-gen
+himm-li-scher
+Tan-nen-baum
+Blät-ter
+ent-sprun-gen
+Wur-zel
+Blüm-lein
+mit-ten
+Win-ter
+Her-ren
+mäch-ti-gen
+Kö-nig
+Eh-ren
+dan-ket
+Hän-den
+gro-ße
+Him-mel
+neu-e
+fröh-li-che
+se-li-ge
+gna-den-brin-gen-de
+Weih-nachts-zeit
+Hir-ten
+Kin-der-lein
+kom-met
+Toch-ter
+Zi-on
+freu-e
+Ma-ri-a
+Dorn-wald
+Ky-ri-e
+e-le-i-son
+Feu-er
+treu-e
+Bau-er
+frei-en
+ge-übt
+ge-ehrt
+See-le
+Jung-frau
+Christ-kind
+Weih-nach-ten
+herr-lich
+Er-lö-ser
+Hal-le-lu-ja
+Beth-le-hem
+Schwes-ter
+Zu-cker
+Kir-che
+Krip-pe
+Hoff-nung
+Gna-de
+Ab-glanz
+
+be-en-den
+ge-eig-net
+Geist
+Freu-de
+Ad-ler
+Herr-lich-keit
+# known limitations: these need a dictionary (Fa-mi-li-e vs Har-mo-nie; compounds such as Morgen+stern
+# are split like simple words, Fens-ter → Mor-gens-tern; the number of syllables is right)
+! Mor-gen-stern
+! Fa-mi-li-e
+! Li-li-en

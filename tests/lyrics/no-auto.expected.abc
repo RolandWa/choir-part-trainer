@@ -1,0 +1,9 @@
+% Test: the piece already has w: lines, so W: is left as it is (a poem after the tune) and nothing is generated.
+X:8
+T:Has w (test)
+M:4/4
+L:1/4
+K:C
+C D E F |]
+w: Al-le-lu-ja
+W:A second verse printed after the tune.

@@ -1,0 +1,19 @@
+# English lines – public domain hymns and carols.
+# syllable count | line of text. The app must find exactly this many syllables (= notes to sing).
+#   ! 8 | ...  known limitation: reported, but does not fail the tests
+8 | Amazing grace! How sweet the sound
+6 | That saved a wretch like me!
+8 | I once was lost, but now am found
+6 | Was blind, but now I see
+8 | Joy to the world, the Lord is come
+6 | Let earth receive her King
+6 | Silent night, holy night
+6 | All is calm, all is bright
+6 | O come, all ye faithful
+6 | Joyful and triumphant
+7 | Hark! the herald angels sing
+7 | Glory to the newborn King
+11 | Holy, holy, holy! Lord God Almighty
+12 | Early in the morning our song shall rise to thee
+# known limitation: "Savior" is sung as two syllables here
+! 6 | Christ the Savior is born

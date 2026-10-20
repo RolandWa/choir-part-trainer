@@ -1,0 +1,36 @@
+# English syllables – English spelling does not show syllables reliably; these are the cases the rules get right,
+# plus known limitations. Only the number of syllables matters for placing words under notes.
+# One word per line, split into syllables with hyphens: the app must split the word exactly like this.
+#   a | b      both splits are accepted (e.g. Polish allows several splits inside consonant groups)
+#   ! a        known limitation: reported, but does not fail the tests
+#   # ...      comment
+A-ma-zing
+grace
+sweet
+saved
+wretch
+Ho-ly
+Al-migh-ty
+Ear-ly
+mor-ning
+Glo-ry
+he-rald
+sing-ing
+Si-lent
+hea-ven-ly
+No-el
+ta-ble
+gra-ces
+comes
+praised
+faith-ful
+tri-um-phant
+re-ceive
+new-born
+Glo-ri-a
+Ky-ri-e
+# known limitations of the English rules (they cannot see pronunciation)
+! an-gels
+! high-est
+! Sav-ior
+! qui-et

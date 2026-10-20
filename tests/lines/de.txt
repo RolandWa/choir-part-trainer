@@ -1,0 +1,35 @@
+# German lines – public domain hymns and carols.
+# syllable count | line of text. The app must find exactly this many syllables (= notes to sing).
+#   ! 8 | ...  known limitation: reported, but does not fail the tests
+7 | Stille Nacht, heilige Nacht
+6 | Alles schläft, einsam wacht
+9 | nur das traute hochheilige Paar
+9 | Holder Knabe im lockigen Haar
+6 | schlaf in himmlischer Ruh
+8 | O Tannenbaum, o Tannenbaum
+7 | wie treu sind deine Blätter
+7 | Es ist ein Ros entsprungen
+6 | aus einer Wurzel zart
+7 | wie uns die Alten sungen
+6 | von Jesse kam die Art
+6 | und hat ein Blümlein bracht
+7 | mitten im kalten Winter
+6 | wohl zu der halben Nacht
+14 | Lobe den Herren, den mächtigen König der Ehren
+6 | Nun danket alle Gott
+7 | mit Herzen, Mund und Händen
+6 | der große Dinge tut
+7 | Großer Gott, wir loben dich
+8 | Herr, wir preisen deine Stärke
+8 | Macht hoch die Tür, die Tor macht weit
+8 | Vom Himmel hoch, da komm ich her
+8 | ich bring euch gute neue Mär
+10 | O du fröhliche, o du selige
+8 | gnadenbringende Weihnachtszeit
+10 | Kommet, ihr Hirten, ihr Männer und Fraun
+6 | Ihr Kinderlein, kommet
+5 | o kommet doch all
+6 | Leise rieselt der Schnee
+7 | Tochter Zion, freue dich
+8 | Maria durch ein Dornwald ging
+7 | Kyrie eleison

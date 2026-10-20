@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Choir warm-up exercises with instructions for soprano, alto, tenor and bass.">
+<title>Choir warm-up</title>
+<style>
+:root{
+  --page:#f3f5f1; --paper:#ffffff; --panel:#e9ede7; --ink:#1b1f1d; --muted:#646d67; --rule:#d5dbd4;
+  --cloth:#1f3b33; --cloth-ink:#f3f5f1; --rubric:#b3261e;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --page:#111513; --paper:#181d1a; --panel:#212823; --ink:#e4eae5; --muted:#9aa59d; --rule:#2f3832;
+    --cloth:#8cc2ab; --cloth-ink:#0f1a15; --rubric:#ff7b6e;
+    color-scheme: dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--ink)}
+body{font:16px/1.6 "Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;-webkit-text-size-adjust:100%}
+:focus-visible{outline:2px solid var(--rubric);outline-offset:2px}
+.wrap{max-width:720px;margin:0 auto;padding:16px 16px 40px}
+.toprow{display:flex;justify-content:space-between;align-items:center;gap:12px;font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.back{color:var(--cloth);font-weight:650;text-decoration:none}
+select{font:inherit;color:inherit;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:6px 8px;min-height:36px}
+h1{font-size:30px;line-height:1.15;font-weight:600;margin:22px 0 10px}
+h2{font-size:21px;line-height:1.25;font-weight:600;margin:0 0 6px}
+h3{font:650 13.5px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--muted);margin:14px 0 2px}
+.lead{font-size:17.5px;margin:0 0 22px}
+section.block{border-top:1px solid var(--rule);padding:18px 0 6px}
+.rules li{margin:4px 0}
+.order{padding-left:22px}
+.order a{color:inherit;text-decoration-color:var(--rule);text-underline-offset:3px}
+.order .m{color:var(--muted);font-size:14px}
+table{border-collapse:collapse;width:100%;font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:8px 0 6px}
+th,td{text-align:left;padding:7px 10px 7px 0;border-bottom:1px solid var(--rule)}
+th{font-weight:650;color:var(--muted);font-size:13px}
+article{border-top:1px solid var(--rule);padding:22px 0 10px;scroll-margin-top:12px}
+.exhead{display:flex;gap:14px;align-items:baseline}
+.num{font:700 15px/1 system-ui,sans-serif;color:var(--cloth-ink);background:var(--cloth);border-radius:50%;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;flex:none;transform:translateY(-3px)}
+.short{color:var(--muted);font-style:italic;margin:0}
+article p{margin:4px 0}
+article ol{margin:4px 0;padding-left:22px}
+article li{margin:3px 0}
+.practice{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 4px;font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.practice .lbl{color:var(--muted)}
+.vbtn{font-weight:650;text-decoration:none;color:var(--cloth-ink);background:var(--cloth);border-radius:18px;padding:7px 16px;min-height:38px;display:inline-flex;align-items:center}
+.free{font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--muted);margin-top:12px}
+.note{border-left:3px solid var(--cloth);padding:6px 12px;margin:24px 0 0;font-size:15.5px}
+footer{color:var(--muted);font:13px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin-top:28px}
+.fatal{background:#b3261e;color:#fff;padding:10px 14px;margin:0;font-family:system-ui,sans-serif}
+@media print{
+  @page{size:A4;margin:16mm 16mm 16mm}
+  :root{--page:#fff;--paper:#fff;--ink:#000;--muted:#444;--rule:#bbb;--cloth:#000;--cloth-ink:#fff;color-scheme:light}
+  body{font-size:11.5pt}
+  .toprow,.practice,.note{display:none}
+  article{break-inside:avoid}
+  h1{margin-top:0}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="toprow">
+    <a id="back" class="back" href="index.html"></a>
+    <select id="lang"></select>
+  </div>
+  <h1 id="title"></h1>
+  <p id="intro" class="lead"></p>
+
+  <section class="block">
+    <h2 id="rulesTitle"></h2>
+    <ul id="rules" class="rules"></ul>
+  </section>
+
+  <section class="block">
+    <h2 id="orderTitle"></h2>
+    <ol id="order" class="order"></ol>
+  </section>
+
+  <section class="block">
+    <h2 id="rangesTitle"></h2>
+    <p id="rangesText"></p>
+    <table id="ranges"></table>
+  </section>
+
+  <div id="exercises"></div>
+  <p id="mixTip" class="note"></p>
+  <footer id="footer"></footer>
+</main>
+
+<script src="i18n.js?v=1.0.0"></script>
+<script src="warmups.js?v=1.0.0"></script>
+<script>
+(function(){
+  const W=window.CHOIR_WARMUPS, I=window.CHOIR_I18N||{};
+  if(!W){ document.body.insertAdjacentHTML('afterbegin','<p class="fatal">warmups.js is missing – keep it in the same folder as warmups.html.</p>'); return; }
+  const MAJOR=[0,2,4,5,7,9,11];
+  const NAMES=[['C',0],['D',-1],['D',0],['E',-1],['E',0],['F',0],['F',1],['G',0],['A',-1],['A',0],['B',-1],['B',0]];
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const $=id=>document.getElementById(id);
+  const semis=d=>MAJOR[((d%7)+7)%7]+12*Math.floor(d/7);
+
+  function pickLang(){
+    const q=new URLSearchParams(location.search).get('lang');
+    if(q&&W.text[q]) return q;
+    try{ const s=JSON.parse(localStorage.getItem('choir:settings')||'null'); if(s&&s.lang&&W.text[s.lang]) return s.lang; }catch(e){}
+    for(const l of (navigator.languages||[navigator.language||'en'])){ const c=String(l||'').slice(0,2).toLowerCase(); if(W.text[c]) return c; }
+    return W.text.en?'en':Object.keys(W.text)[0];
+  }
+  let LANG=pickLang();
+  const G=k=>{ const g=(W.text[LANG]&&W.text[LANG]._guide)||{}, e=(W.text.en&&W.text.en._guide)||{}; return k in g?g[k]:e[k]; };
+  const X=id=>(W.text[LANG]&&W.text[LANG][id])||(W.text.en&&W.text.en[id])||{};
+  const U=k=>{ const L=I[LANG]||{}, E=I.en||{}; return k in L?L[k]:k in E?E[k]:k; };
+
+  function pitchName(m){
+    const [L,a]=NAMES[((m%12)+12)%12], oct=Math.floor(m/12)-1;
+    if(U('_naming')==='english') return L+(a===1?'♯':a===-1?'♭':'')+oct;
+    const flat={C:'ces',D:'des',E:'es',F:'fes',G:'ges',A:'as',B:'b'};
+    let n=a===-1?flat[L]:(L==='B'?'h':L.toLowerCase())+(a===1?'is':'');
+    if(oct<=2) n=n[0].toUpperCase()+n.slice(1);
+    if(oct<=1) n+=','.repeat(2-oct);
+    if(oct>=4) n+=['¹','²','³','⁴'][oct-4]||'';
+    return n;
+  }
+  function voiceRange(vk){
+    let lo=Infinity, hi=-Infinity;
+    for(const ex of W.exercises){
+      if(ex.kind==='solo'){
+        const start=W.voices[vk][ex.range];
+        const degs=ex.notes.split(/[\s|]+/).filter(t=>t&&t[0]!=='z').map(t=>+t.split(':')[0]);
+        lo=Math.min(lo,start+Math.min(...degs.map(semis)));
+        hi=Math.max(hi,start+ex.steps+Math.max(...degs.map(semis)));
+      } else if(ex.kind==='choir'){
+        for(const key of ex.keys){ const root=key+(ex.octave[vk]||0); for(const d of ex.chords[vk]){ const p=root+semis(d); lo=Math.min(lo,p); hi=Math.max(hi,p); } }
+      }
+    }
+    return [lo,hi];
+  }
+  function render(){
+    document.documentElement.lang=LANG;
+    document.title=G('title');
+    $('back').textContent=G('back');
+    $('back').href='index.html';
+    $('title').textContent=G('title');
+    $('intro').textContent=G('intro');
+    $('rulesTitle').textContent=G('rulesTitle');
+    $('rules').innerHTML=(G('rules')||[]).map(r=>`<li>${esc(r)}</li>`).join('');
+    $('orderTitle').textContent=G('orderTitle');
+    $('order').innerHTML=W.exercises.map(ex=>`<li><a href="#ex-${esc(ex.id)}">${esc(X(ex.id).title||ex.id)}</a> <span class="m">– ${esc(String(G('min')).replace('{n}',ex.minutes||1))}</span></li>`).join('');
+    $('rangesTitle').textContent=G('rangesTitle');
+    $('rangesText').textContent=G('rangesText');
+    $('ranges').innerHTML=`<tr><th>${esc(G('colVoice'))}</th><th>${esc(G('colLow'))}</th><th>${esc(G('colHigh'))}</th></tr>`+
+      Object.keys(W.voices).map(vk=>{ const [lo,hi]=voiceRange(vk); return `<tr><td>${esc(U('v'+vk))}</td><td>${esc(pitchName(lo))}</td><td>${esc(pitchName(hi))}</td></tr>`; }).join('');
+    $('exercises').innerHTML=W.exercises.map((ex,i)=>{
+      const tx=X(ex.id);
+      const how=(tx.how||[]).map(h=>`<li>${esc(h)}</li>`).join('');
+      let practice;
+      if(ex.kind==='free') practice=`<p class="free">${esc(G('noNotes'))}</p>`;
+      else practice=`<div class="practice"><span class="lbl">${esc(G('practice'))}</span>`+
+        Object.keys(W.voices).map(vk=>`<a class="vbtn" href="index.html#warmup=${encodeURIComponent(ex.id)}&amp;v=${vk}">${esc(U('v'+vk))}</a>`).join('')+`</div>`;
+      return `<article id="ex-${esc(ex.id)}">
+        <div class="exhead"><span class="num">${i+1}</span><div><h2>${esc(tx.title||ex.id)}</h2><p class="short">${esc(tx.short||'')} – ${esc(String(G('min')).replace('{n}',ex.minutes||1))}</p></div></div>
+        <h3>${esc(G('goal'))}</h3><p>${esc(tx.goal||'')}</p>
+        <h3>${esc(G('how'))}</h3><ol>${how}</ol>
+        <h3>${esc(G('tips'))}</h3><p>${esc(tx.tips||'')}</p>
+        ${practice}
+      </article>`;
+    }).join('');
+    $('mixTip').textContent=G('mixTip');
+    $('footer').textContent=G('footer');
+    const sel=$('lang');
+    sel.setAttribute('aria-label',G('lang'));
+    sel.innerHTML=Object.keys(W.text).map(k=>`<option value="${k}">${esc((I[k]&&I[k]._name)||k)}</option>`).join('');
+    sel.value=LANG;
+  }
+  $('lang').addEventListener('change',e=>{
+    LANG=e.target.value;
+    const u=new URL(location.href); u.searchParams.set('lang',LANG);
+    try{ history.replaceState(null,'',u.toString()); }catch(err){}
+    render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>

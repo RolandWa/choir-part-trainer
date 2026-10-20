@@ -1,0 +1,66 @@
+# Latin lines – metrical hymns, so every line has a known number of syllables.
+# syllable count | line of text. The app must find exactly this many syllables (= notes to sing).
+#   ! 8 | ...  known limitation: reported, but does not fail the tests
+8 | Tantum ergo Sacramentum
+7 | veneremur cernui
+8 | et antiquum documentum
+7 | novo cedat ritui
+8 | praestet fides supplementum
+7 | sensuum defectui
+8 | Genitori Genitoque
+7 | laus et iubilatio
+8 | salus, honor, virtus quoque
+7 | sit et benedictio
+8 | procedenti ab utroque
+7 | compar sit laudatio
+8 | Veni Creator Spiritus
+8 | mentes tuorum visita
+8 | imple superna gratia
+8 | quae tu creasti pectora
+8 | Qui diceris Paraclitus
+8 | Altissimi donum Dei
+8 | fons vivus, ignis, caritas
+8 | et spiritalis unctio
+8 | Pange lingua gloriosi
+7 | Corporis mysterium
+8 | Sanguinisque pretiosi
+7 | quem in mundi pretium
+8 | fructus ventris generosi
+7 | Rex effudit gentium
+6 | Ave maris stella
+6 | Dei Mater alma
+6 | atque semper Virgo
+6 | felix caeli porta
+12 | Adoro te devote, latens Deitas
+11 | Quae sub his figuris vere latitas
+11 | Tibi se cor meum totum subiicit
+11 | Quia te contemplans totum deficit
+8 | Iesu dulcis memoria
+8 | dans vera cordis gaudia
+8 | sed super mel et omnia
+8 | eius dulcis praesentia
+8 | Stabat Mater dolorosa
+8 | iuxta crucem lacrimosa
+7 | dum pendebat Filius
+8 | Cuius animam gementem
+8 | contristatam et dolentem
+7 | pertransivit gladius
+8 | Dies irae, dies illa
+8 | solvet saeclum in favilla
+8 | teste David cum Sibylla
+6 | Adeste fideles
+6 | laeti triumphantes
+5 | natum videte
+6 | Regem angelorum
+7 | Venite adoremus
+5 | Ut queant laxis
+6 | resonare fibris
+5 | Mira gestorum
+6 | famuli tuorum
+5 | Solve polluti
+6 | labii reatum
+5 | Sancte Iohannes
+8 | Iam lucis orto sidere
+8 | Deum precemur supplices
+8 | ut in diurnis actibus
+8 | nos servet a nocentibus

@@ -1,0 +1,82 @@
+# Polish syllables – conventions of Polish songbooks: s/ś/sz/z + consonant, a stop + r/l/ł/rz and consonant + w go
+# to the next syllable (pa-ste-rze, źró-dła, zmar-twych-wstał), prefixes stay whole (roz-cho-dzi, Naj-święt-sza),
+# i before a vowel is not a syllable (nie, wia-ra, me-lo-dia), Latin words keep Latin rules (Glo-ri-a, Ky-ri-e).
+# One word per line, split into syllables with hyphens: the app must split the word exactly like this.
+#   a | b      both splits are accepted (e.g. Polish allows several splits inside consonant groups)
+#   ! a        known limitation: reported, but does not fail the tests
+#   # ...      comment
+noc-nej
+ci-szy
+roz-cho-dzi
+wstań-cie
+pas-te-rze | pa-ste-rze
+tru-chle-je
+nie-bio-sów
+ob-na-żo-ny
+świę-ta
+pójdź-my
+wszys-cy | wszy-scy
+sta-jen-ki
+Chrys-tus | Chry-stus
+Ma-ry-ja
+Ma-ry-jo
+a-nioł
+a-nio-ło-wie
+Dzie-ciąt-ko
+dzie-ci-na
+Jó-zef
+Be-tle-jem
+Je-zu-niu
+pe-reł-ko
+u-lu-bio-ne
+pie-ści-deł-ko
+chrze-ści-ja-nie
+zmar-twych-wstał
+Naj-święt-sza
+ra-dość
+zie-mia
+nie-bo
+wy-bie-raj-cie
+po-spie-szaj-cie
+Pa-nien-ki
+ga-i-ki
+mo-i
+bo-is-ko | bo-i-sko
+na-u-ka
+za-u-fa-nie
+pau-za
+Eu-ro-pa
+Ma-te-usz
+mu-ze-um
+po-e-ta
+Iz-ra-el | I-zra-el
+Em-ma-nu-el
+E-wan-ge-lia
+Eu-cha-rys-tia | Eu-cha-ry-stia
+his-to-ria | hi-sto-ria
+me-lo-dia
+Mel-chior
+al-le-lu-ja
+pszczo-ła
+źró-dła
+krzep-nie
+ciem-nie-je
+gra-ni-ce
+nies-koń-czo-ny | nie-skoń-czo-ny
+wzgar-dzo-ny
+śmier-tel-ny
+miesz-ka-ło | mie-szka-ło
+u-śmiech-nię-ta | uś-miech-nię-ta
+
+# prefixes, words without vowels, Latin words inside Polish text
+bez-piecz-ny
+o-dzież
+po-dziw
+od-rzu-cić
+na-dzie-ja
+gwiazd-ka
+póź-niej
+Glo-ri-a
+Ky-ri-e
+Ma-ri-a
+Al-le-lu-ia

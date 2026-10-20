@@ -1,0 +1,40 @@
+# Polish lines – traditional carols and 18th–19th century hymns (public domain).
+# syllable count | line of text. The app must find exactly this many syllables (= notes to sing).
+#   ! 8 | ...  known limitation: reported, but does not fail the tests
+10 | Wśród nocnej ciszy głos się rozchodzi
+10 | wstańcie, pasterze, Bóg się wam rodzi
+8 | Czym prędzej się wybierajcie
+8 | do Betlejem pospieszajcie
+8 | Bóg się rodzi, moc truchleje
+8 | Pan niebiosów obnażony
+8 | Ogień krzepnie, blask ciemnieje
+8 | ma granice Nieskończony
+8 | Wzgardzony, okryty chwałą
+8 | Śmiertelny Król nad wiekami
+8 | A Słowo Ciałem się stało
+8 | i mieszkało między nami
+6 | Cicha noc, święta noc
+7 | pokój niesie ludziom wszem
+8 | a u żłóbka Matka Święta
+8 | czuwa sama uśmiechnięta
+5 | nad Dzieciątka snem
+11 | Lulajże, Jezuniu, moja perełko
+11 | lulaj, ulubione me pieścidełko
+6 | Gdy się Chrystus rodzi
+6 | i na świat przychodzi
+12 | ciemna noc w jasności promienistej brodzi
+8 | Pójdźmy wszyscy do stajenki
+8 | do Jezusa i Panienki
+11 | Przybieżeli do Betlejem pasterze
+11 | grając skocznie Dzieciąteczku na lirze
+10 | Dzisiaj w Betlejem, dzisiaj w Betlejem
+6 | wesoła nowina
+10 | że Panna czysta, że Panna czysta
+6 | porodziła Syna
+7 | Anioł pasterzom mówił
+7 | Chrystus się wam narodził
+10 | Mizerna, cicha, stajenka licha
+8 | Chwalcie łąki umajone
+8 | góry, doliny zielone
+8 | Chwalcie cieniste gaiki
+8 | źródła i kręte strumyki

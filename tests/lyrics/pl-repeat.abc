@@ -1,0 +1,12 @@
+% Test: Polish words from W: placed under the notes. The repeated section |: :| is sung twice with
+% different words, so it gets two lines of text; a slur (c B) is a melisma. Test melody.
+X:1
+T:Wśród nocnej ciszy (test)
+M:4/4
+L:1/4
+K:G
+W:Wśród nocnej ciszy głos się rozchodzi:
+W:wstańcie, pasterze, Bóg się wam rodzi!
+W:Gloria, gloria in excelsis!
+|: G A B c | d2 c2 | B A G2 | G4 :|
+d d e d | (c B) A2 | G A B2 | c4 |]

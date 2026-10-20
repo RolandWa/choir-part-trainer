@@ -1,0 +1,14 @@
+% Test: English, two verses separated by an empty W: line; a tied note (d3- | d2) holds the last syllable,
+% slurred eighths (B/G/) are a melisma.
+X:6
+T:Amazing Grace (test)
+M:3/4
+L:1/4
+K:G
+W:1. Amazing grace! How sweet the sound
+W:That saved a wretch like me!
+W:
+W:2. 'Twas grace that taught my heart to fear,
+W:And grace my fears relieved;
+D | G2 (B/G/) | B2 A | G2 E | D2 D |
+G2 (B/G/) | B2 A | d3- | d2 |]

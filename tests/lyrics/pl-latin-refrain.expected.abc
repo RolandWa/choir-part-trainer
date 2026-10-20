@@ -1,0 +1,10 @@
+% Test: Polish verse with a Latin refrain line – the refrain is split by Latin rules (Glo-ri-a, ex-cel-sis).
+X:3
+T:Kolęda z refrenem (test)
+M:4/4
+L:1/4
+K:G
+G A B c | d2 c2 | B A G2 | G4 |
+w: Wśród noc-nej ci-szy głos się roz-cho-dzi:
+d d e d | (c B) A2 | G2 B2 | c3 z |]
+w: Glo-ri-a in ex-_cel-sis De-o!

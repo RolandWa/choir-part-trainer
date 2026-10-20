@@ -1,0 +1,22 @@
+% Test: Latin hymn (8.7.8.7.8.7) with two verses: each verse has 45 syllables; slurs are melismas.
+X:5
+T:Tantum ergo (test)
+M:4/4
+L:1/4
+K:F
+W:1. Tantum ergo Sacramentum
+W:veneremur cernui:
+W:et antiquum documentum
+W:novo cedat ritui:
+W:praestet fides supplementum
+W:sensuum defectui.
+W:
+W:2. Genitori, Genitoque
+W:laus et iubilatio,
+W:salus, honor, virtus quoque
+W:sit et benedictio:
+W:procedenti ab utroque
+W:compar sit laudatio.
+F G A B | c B A G | A B c d | (c B) A G |
+F G A B | c B A G | A B c d | (c B) A G |
+c c d c | B A G F | G A B A | (G F) F F |]

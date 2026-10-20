@@ -1,0 +1,21 @@
+% Test: three parts, two numbered verses, a rest at the start of bar 3 (syllables skip rests).
+X:2
+T:Chorał (test)
+M:4/4
+L:1/4
+V:S name="Sopran"
+V:A name="Alt"
+V:B name="Bas" clef=bass
+K:C
+V:S
+E E F G | G F E D | z C D E | D C D C |]
+w: 1.~Chwa-ła na wy-so-ko-ści Bo-gu, a na zie-mi po-kój.
+w: 2.~Świę-ty, świę-ty, świę-ty Pan, peł-ne nie-bo chwa-ły Two-jej.
+V:A
+C C C B, | C C C B, | z A, B, C | B, C B, C |]
+w: 1.~Chwa-ła na wy-so-ko-ści Bo-gu, a na zie-mi po-kój.
+w: 2.~Świę-ty, świę-ty, świę-ty Pan, peł-ne nie-bo chwa-ły Two-jej.
+V:B
+C, C, F, G, | E, F, G, G, | z A,, G,, C, | G,, C, G,, C, |]
+w: 1.~Chwa-ła na wy-so-ko-ści Bo-gu, a na zie-mi po-kój.
+w: 2.~Świę-ty, świę-ty, świę-ty Pan, peł-ne nie-bo chwa-ły Two-jej.

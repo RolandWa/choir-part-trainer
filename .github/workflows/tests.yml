@@ -1,0 +1,16 @@
+# Runs the tests on GitHub after every push and for every pull request.
+# The result is shown as a green tick or a red cross next to the commit, and in the "Actions" tab.
+name: Tests
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+      - run: node tests/run.js --verbose
