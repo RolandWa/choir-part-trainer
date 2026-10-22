@@ -7,7 +7,8 @@ const vm = require('vm');
 
 const EXPORTS = [
   'parseABC', 'buildTimeline', 'expandRepeats', 'abcDisplay', 'renderScore', 'decodeAbcText', 'stripComment',
-  'lyrSyllabify', 'lyrSyllabifyLa', 'lyrSyllables', 'lyrVerses', 'lyrDetectLang', 'autoLyrics', 'abcWithAutoLyrics'
+  'lyrSyllabify', 'lyrSyllabifyLa', 'lyrSyllables', 'lyrVerses', 'lyrDetectLang', 'lyrLangScores', 'autoLyrics', 'abcWithAutoLyrics',
+  'playOrder', 'jumpPlan', 'jumpKind', 'normClef', 'parseKey'
 ];
 
 module.exports = function loadApp() {

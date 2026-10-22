@@ -1,6 +1,6 @@
 /* Service worker for Choir Part Trainer: network first, cache as fallback,
    so the app always updates when online and still opens offline at rehearsal. */
-const CACHE = 'choir-cache-1.0.0';
+const CACHE = 'choir-cache-1.0.1';
 const CORE = ['./', './index.html', './i18n.js', './warmups.js', './warmups.html', './manifest.webmanifest', './icons/icon-192.png'];
 
 self.addEventListener('install', e => {

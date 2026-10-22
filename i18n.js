@@ -282,11 +282,13 @@ window.CHOIR_I18N = {
     'w.lyrics.other': 'Linia w: ma o {n} sylaby więcej niż nut w linii nad nią.',
     'w.chord': 'Pusty akord [ ].',
     'w.acc': 'Znak „{c}” musi stać tuż przed literą nuty.',
-    'w.H': 'Litera H w ABC nie jest dźwiękiem. Polskie H zapisuj jako B (np. B, albo B,,), a polskie b jako _B.',
+    'w.H': 'Litera H w ABC nie jest dźwiękiem (tuż przed nutą oznacza fermatę, np. Hc2). Polskie H zapisuj jako B (np. B, albo B,,), a polskie b jako _B.',
     'w.digit': 'Cyfra bez nuty. Długość pisz zaraz po nucie, bez spacji (np. D2).',
     'w.unknown': 'Nieznany znak „{c}”.',
     'w.measure': 'Takt {bar} ma długość {len} zamiast {exp}.',
     'w.bars': 'Głosy mają różną liczbę taktów ({list}).',
+    'w.noSegno': 'Jest D.S. (dal segno), ale brak znaku segno (S albo !segno!) – powtarzam od początku.',
+    'w.noCoda': 'Jest „al Coda”, ale brak dwóch znaków coda (O albo !coda!: miejsce skoku i początek cody) – gram do końca.',
     helpHtml: `
 <p>Wpisuj dźwięki tak, jak brzmią. Klucz wybierasz w polu <code>K:</code> albo <code>V:</code>.</p>
 <pre>T:Tytuł
@@ -308,10 +310,12 @@ K:Dm clef=bass   tonacja i klucz</pre>
 </table>
 <p>Przecinek obniża o oktawę, apostrof podwyższa (<code>c'</code> to c³). W ABC litera <code>B</code> to polskie <b>H</b>. Dźwięk b zapisujesz <code>_B</code> albo wynika on z tonacji (np. K:F, K:Dm). Tonacja B-dur to <code>K:Bb</code>.</p>
 <p><b>Tenor</b> w kluczu wiolinowym z ósemką (<code>clef=treble-8</code>): zapisujesz nuty tak, jak są wydrukowane, czyli oktawę wyżej, niż brzmią – tak samo jak w innych programach ABC. Aplikacja gra je i sprawdza oktawę niżej, tak jak śpiewasz.</p>
+<p><b>Oktawa i transpozycja głosu</b>: <code>V:B clef=bass octave=-1</code> – nuty głosu zapisane są oktawę wyżej (<code>c</code> to środkowe C), a aplikacja pokazuje i gra je we właściwym miejscu. <code>transpose=-2</code> – głos brzmi 2 półtony niżej, nuty na pięciolinii się nie zmieniają. Oba działają też w polu <code>K:</code>.</p>
 <p><b>Znaki przed nutą</b>: <code>^</code> krzyżyk, <code>_</code> bemol, <code>=</code> kasownik. Działają do końca taktu.</p>
 <p><b>Długość</b> przy L:1/8: <code>c/</code> szesnastka, <code>c</code> ósemka, <code>c2</code> ćwierćnuta, <code>c3</code> ćwierćnuta z kropką, <code>c4</code> półnuta, <code>c6</code> półnuta z kropką, <code>c8</code> cała nuta. <code>c&gt;d</code> to ósemka z kropką i szesnastka, <code>(3cde</code> to triola.</p>
 <p><b>Pauza</b> to <code>z</code> (np. <code>z2</code> to pauza ćwierćnutowa). <b>Łuk</b> łączący: <code>c4-c2</code>. Nuty pisane razem łączą się belką (<code>cdef</code>), spacja je rozdziela.</p>
 <p><b>Kreski taktowe</b>: <code>|</code> zwykła, <code>||</code> podwójna, <code>|]</code> zakończenie, <code>|:</code> i <code>:|</code> powtórka, <code>[1</code> i <code>[2</code> klamry pierwszego i drugiego zakończenia.</p>
+<p><b>Skoki</b>: <code>!D.C.!</code> – od początku, <code>!D.S.!</code> – od znaku <code>S</code> (<code>!segno!</code>), <code>!fine!</code> – koniec. <code>!D.C.alfine!</code> i <code>!D.S.alfine!</code> kończą na Fine, <code>!D.C.alcoda!</code> i <code>!D.S.alcoda!</code> przy pierwszym znaku <code>O</code> (<code>!coda!</code>) skaczą do drugiego. Za drugim razem powtórki <code>|: :|</code> grane są raz, z ostatnim zakończeniem. Działa też tekst nad nutą, np. <code>"^D.C. al Fine"</code>, <code>"^Fine"</code>, <code>"^To Coda"</code>.</p>
 <p><b>Tekst</b> w linii pod nutami: <code>w: Al-le-lu-ja, A-men</code>. Sylaby rozdzielasz spacją albo łącznikiem, <code>_</code> przedłuża sylabę na następną nutę, <code>*</code> pomija nutę. Kolejne linie <code>w:</code> to kolejne zwrotki. Linia <code>w:</code> dotyczy linii nut tuż nad nią. Nuty związane łukiem (<code>-</code>) liczą się jak osobne nuty – drugą oznacz <code>_</code>.</p>
 <p><b>W: czy w:?</b> Wielka litera <code>W:</code> to tylko wiersz drukowany pod całym utworem, bez informacji, pod którą nutą jest która sylaba. Jeśli utwór ma tylko <code>W:</code>, aplikacja sama dzieli słowa na sylaby i podpisuje je pod nutami (melizmaty pod łukiem frazowym <code>( )</code> dostają <code>_</code>, powtórzenia <code>|: :|</code> dostają osobny wiersz tekstu). Przycisk „Zapisz w nutach” zamienia to na zwykłe linie <code>w:</code>, które możesz poprawić.</p>
 <p><b>Kilka głosów w jednym pliku</b>: zdefiniuj głosy w nagłówku, a potem pisz nuty każdego głosu po linii <code>V:</code>:</p>
@@ -589,11 +593,13 @@ F,2 E,2 D,2 C,2 | F,8 |]</pre>
     'w.lyrics.other': 'The w: line has {n} more syllables than there are notes in the line above.',
     'w.chord': 'Empty chord [ ].',
     'w.acc': 'The “{c}” sign must come right before a note letter.',
-    'w.H': 'H is not a note in ABC (it marks a fermata). Write the note B as B.',
+    'w.H': 'H is not a note in ABC – right before a note it is a fermata (e.g. Hc2). Write the note B as B.',
     'w.digit': 'A number without a note. Write the length right after the note, without a space (e.g. D2).',
     'w.unknown': 'Unknown character “{c}”.',
     'w.measure': 'Bar {bar} has length {len} instead of {exp}.',
     'w.bars': 'The parts have different numbers of bars ({list}).',
+    'w.noSegno': 'There is a D.S. (dal segno) but no segno sign (S or !segno!) – repeating from the beginning.',
+    'w.noCoda': 'There is “al Coda” but not two coda signs (O or !coda!: where to leave and where the coda starts) – playing to the end.',
     helpHtml: `
 <p>Type the notes as they sound. Choose the clef in the <code>K:</code> or <code>V:</code> field.</p>
 <pre>T:Title
@@ -615,10 +621,12 @@ K:Dm clef=bass   key and clef</pre>
 </table>
 <p>A comma lowers a note by an octave, an apostrophe raises it (<code>c'</code> is C6). B-flat major is <code>K:Bb</code>.</p>
 <p><b>Tenor</b> in the treble-8 clef (<code>clef=treble-8</code>): write the notes as printed, an octave above the sounding pitch – the same as in other ABC programs. The app plays and checks them an octave lower, as you sing them.</p>
+<p><b>Octave and transposition of a part</b>: <code>V:B clef=bass octave=-1</code> – the part is written an octave higher (<code>c</code> is middle C) and the app shows and plays it in the right place. <code>transpose=-2</code> – the part sounds 2 semitones lower, the notes on the staff stay the same. Both also work in the <code>K:</code> field.</p>
 <p><b>Accidentals</b> before the letter: <code>^</code> sharp, <code>_</code> flat, <code>=</code> natural. They last until the end of the bar.</p>
 <p><b>Length</b> with L:1/8: <code>c/</code> 16th, <code>c</code> 8th, <code>c2</code> quarter, <code>c3</code> dotted quarter, <code>c4</code> half, <code>c6</code> dotted half, <code>c8</code> whole. <code>c&gt;d</code> is a dotted 8th and a 16th, <code>(3cde</code> is a triplet.</p>
 <p><b>Rest</b>: <code>z</code> (e.g. <code>z2</code> is a quarter rest). <b>Tie</b>: <code>c4-c2</code>. Notes written together are beamed (<code>cdef</code>), a space separates them.</p>
 <p><b>Barlines</b>: <code>|</code> single, <code>||</code> double, <code>|]</code> final, <code>|:</code> and <code>:|</code> repeat, <code>[1</code> and <code>[2</code> first and second endings.</p>
+<p><b>Jumps</b>: <code>!D.C.!</code> – from the beginning, <code>!D.S.!</code> – from the <code>S</code> sign (<code>!segno!</code>), <code>!fine!</code> – the end. <code>!D.C.alfine!</code> and <code>!D.S.alfine!</code> stop at Fine, <code>!D.C.alcoda!</code> and <code>!D.S.alcoda!</code> jump from the first <code>O</code> sign (<code>!coda!</code>) to the second. The second time through, repeats <code>|: :|</code> are played once, with the last ending. Text above a note works too, e.g. <code>"^D.C. al Fine"</code>, <code>"^Fine"</code>, <code>"^To Coda"</code>.</p>
 <p><b>Lyrics</b> in a line below the notes: <code>w: Al-le-lu-ia, A-men</code>. Separate syllables with spaces or hyphens; <code>_</code> holds a syllable over the next note, <code>*</code> skips a note. Several <code>w:</code> lines are several verses. A <code>w:</code> line belongs to the line of notes just above it. Tied notes (<code>-</code>) count as separate notes – mark the second one with <code>_</code>.</p>
 <p><b>W: or w:?</b> A capital <code>W:</code> is just a poem printed after the tune, with no information about which syllable goes under which note. If a piece only has <code>W:</code>, the app splits the words into syllables and places them under the notes itself (melismas under a slur <code>( )</code> get <code>_</code>, repeats <code>|: :|</code> get a separate line of text). “Save in the notes” turns this into ordinary <code>w:</code> lines that you can correct.</p>
 <p><b>Several parts in one file</b>: define the parts in the header, then write each part's notes after a <code>V:</code> line:</p>
@@ -896,11 +904,13 @@ F,2 E,2 D,2 C,2 | F,8 |]</pre>
     'w.lyrics.other': 'Die w:-Zeile hat {n} Silben mehr als Noten in der Zeile darüber.',
     'w.chord': 'Leerer Akkord [ ].',
     'w.acc': 'Das Zeichen „{c}“ muss direkt vor dem Notenbuchstaben stehen.',
-    'w.H': 'Der Buchstabe H ist in ABC keine Note. Das deutsche H schreibst du als B (z. B. B, oder B,,), das deutsche B als _B.',
+    'w.H': 'Der Buchstabe H ist in ABC keine Note (direkt vor einer Note bedeutet er Fermate, z. B. Hc2). Das deutsche H schreibst du als B (z. B. B, oder B,,), das deutsche B als _B.',
     'w.digit': 'Zahl ohne Note. Schreibe den Notenwert direkt nach der Note, ohne Leerzeichen (z. B. D2).',
     'w.unknown': 'Unbekanntes Zeichen „{c}“.',
     'w.measure': 'Takt {bar} hat die Länge {len} statt {exp}.',
     'w.bars': 'Die Stimmen haben unterschiedlich viele Takte ({list}).',
+    'w.noSegno': 'Es gibt ein D.S. (dal segno), aber kein Segno-Zeichen (S oder !segno!) – wiederhole von Anfang an.',
+    'w.noCoda': 'Es gibt „al Coda“, aber nicht zwei Coda-Zeichen (O oder !coda!: Absprung und Beginn der Coda) – spiele bis zum Ende.',
     helpHtml: `
 <p>Schreibe die Töne so, wie sie klingen. Den Schlüssel wählst du im Feld <code>K:</code> oder <code>V:</code>.</p>
 <pre>T:Titel
@@ -922,10 +932,12 @@ K:Dm clef=bass   Tonart und Schlüssel</pre>
 </table>
 <p>Ein Komma senkt um eine Oktave, ein Apostroph erhöht (<code>c'</code> ist c³). In ABC ist der Buchstabe <code>B</code> das deutsche <b>H</b>. Das deutsche B schreibst du als <code>_B</code>, oder es ergibt sich aus der Tonart (z. B. K:F, K:Dm). B-Dur ist <code>K:Bb</code>.</p>
 <p><b>Tenor</b> im Violinschlüssel mit 8 (<code>clef=treble-8</code>): schreibe die Noten so, wie sie gedruckt sind, also eine Oktave höher als sie klingen – wie in anderen ABC-Programmen. Die App spielt und prüft sie eine Oktave tiefer, so wie du singst.</p>
+<p><b>Oktave und Transposition einer Stimme</b>: <code>V:B clef=bass octave=-1</code> – die Stimme ist eine Oktave höher notiert (<code>c</code> ist das mittlere C), die App zeigt und spielt sie an der richtigen Stelle. <code>transpose=-2</code> – die Stimme klingt 2 Halbtöne tiefer, die Noten im System bleiben gleich. Beides geht auch im Feld <code>K:</code>.</p>
 <p><b>Vorzeichen</b> vor dem Buchstaben: <code>^</code> Kreuz, <code>_</code> Be, <code>=</code> Auflösungszeichen. Sie gelten bis zum Taktende.</p>
 <p><b>Notenwert</b> bei L:1/8: <code>c/</code> Sechzehntel, <code>c</code> Achtel, <code>c2</code> Viertel, <code>c3</code> punktierte Viertel, <code>c4</code> Halbe, <code>c6</code> punktierte Halbe, <code>c8</code> Ganze. <code>c&gt;d</code> ist eine punktierte Achtel mit Sechzehntel, <code>(3cde</code> eine Triole.</p>
 <p><b>Pause</b>: <code>z</code> (z. B. <code>z2</code> ist eine Viertelpause). <b>Haltebogen</b>: <code>c4-c2</code>. Zusammen geschriebene Noten werden mit Balken verbunden (<code>cdef</code>), ein Leerzeichen trennt sie.</p>
 <p><b>Taktstriche</b>: <code>|</code> einfach, <code>||</code> doppelt, <code>|]</code> Schluss, <code>|:</code> und <code>:|</code> Wiederholung, <code>[1</code> und <code>[2</code> erste und zweite Klammer.</p>
+<p><b>Sprünge</b>: <code>!D.C.!</code> – von Anfang an, <code>!D.S.!</code> – ab dem Zeichen <code>S</code> (<code>!segno!</code>), <code>!fine!</code> – Ende. <code>!D.C.alfine!</code> und <code>!D.S.alfine!</code> enden bei Fine, <code>!D.C.alcoda!</code> und <code>!D.S.alcoda!</code> springen vom ersten <code>O</code>-Zeichen (<code>!coda!</code>) zum zweiten. Beim zweiten Durchgang werden Wiederholungen <code>|: :|</code> nur einmal gespielt, mit dem letzten Schluss. Text über einer Note geht auch, z. B. <code>"^D.C. al Fine"</code>, <code>"^Fine"</code>, <code>"^To Coda"</code>.</p>
 <p><b>Text</b> in einer Zeile unter den Noten: <code>w: Hal-le-lu-ja, A-men</code>. Silben trennst du mit Leerzeichen oder Bindestrich; <code>_</code> verlängert eine Silbe auf die nächste Note, <code>*</code> überspringt eine Note. Mehrere <code>w:</code>-Zeilen sind mehrere Strophen. Eine <code>w:</code>-Zeile gehört zur Notenzeile direkt darüber. Mit Haltebogen (<code>-</code>) verbundene Noten zählen als einzelne Noten – markiere die zweite mit <code>_</code>.</p>
 <p><b>W: oder w:?</b> Ein großes <code>W:</code> ist nur ein Gedicht unter dem Stück, ohne Angabe, welche Silbe unter welcher Note steht. Hat ein Stück nur <code>W:</code>, trennt die App die Wörter selbst in Silben und setzt sie unter die Noten (Melismen unter einem Bogen <code>( )</code> bekommen <code>_</code>, Wiederholungen <code>|: :|</code> eine eigene Textzeile). „In den Noten speichern“ macht daraus normale <code>w:</code>-Zeilen, die du korrigieren kannst.</p>
 <p><b>Mehrere Stimmen in einer Datei</b>: definiere die Stimmen im Kopf und schreibe dann die Noten jeder Stimme nach einer <code>V:</code>-Zeile:</p>

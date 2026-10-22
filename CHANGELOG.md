@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.0.1 – 2026-10-22
+
+- Jumps are played: D.C., D.S. (from the segno S / !segno!), Fine, D.C./D.S. al Fine and al Coda (from the first coda
+  sign O / !coda! or “To Coda” to the second). Decorations (!D.C.!, !D.S.alcoda!, +fine+) and text above the notes
+  ("^D.C. al Fine", "^Fine", "^To Coda") both work; a mark in one part applies to all parts. The second time through,
+  repeats are played once with the last ending. Warnings when the segno or the coda signs are missing.
+- octave= in V: and K: (also inline [K:] / [V:]) moves a part by octaves on the staff and in sound, as in ABC 2.1 and
+  abcjs (e.g. clef=bass octave=-1, where c is middle C). transpose= changes only the sound. treble+8, bass-8 and
+  bass+8 clefs sound an octave higher or lower. Notes typed with the note buttons are previewed at the right pitch.
+- H right before a note (the fermata sign, e.g. Hc2) no longer gives the “H is not a note” warning; H used as a
+  note name still does.
+- $ (the score line break of ABC 2.1) is no longer reported as an unknown character.
+- In-app ABC help (PL/EN/DE) describes jumps, octave= and transpose=.
+- About 30 new automatic tests (566 checks in total).
+
 ## 1.0.0 – 2026-10-19
 
 - First public version.
@@ -13,6 +28,7 @@
 - Polish, English and German interface.
 - Words from W: placed under the notes automatically (syllables in Polish, English, German and Latin; ties, slurs and repeats), with saving as w: lines.
 - Polish syllables follow Polish songbook practice (pa-ste-rze, źró-dła, zmar-twych-wstał, Naj-święt-sza; me-lo-dia, pau-za); German follows the 2006 rules with separate umlauts (ge-übt, ent-sprun-gen); Latin words such as Kyrie and Gloria keep Latin rules in any language.
+- English syllables: -cious, -tion, -teous, Virginia, woe, does, bravely, baffles counted as sung.
 - Automatic tests (tests/, about 500 checks, no dependencies) run on GitHub after every push and before each release.
 - Latin syllables follow the rules of sung liturgical Latin (Solesmes / Gregorio hyphen-la); Latin refrains in other-language texts are split as Latin.
 - Lyric alignment now follows abcjs and abcm2ps exactly (tied notes count as notes, rests are skipped by syllables).

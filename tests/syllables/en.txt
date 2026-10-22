@@ -29,8 +29,42 @@ re-ceive
 new-born
 Glo-ri-a
 Ky-ri-e
+woe
+does
+beau-teous
+righ-teous
+gor-geous
+ou-tra-geous | out-ra-geous
+beau-ty
+brave-ly
+love-ly
+care-ful
+gen-tle-ness
+baf-fles
+trou-bled
+ta-bles
+comes
+lives
+Vir-gin-ia | Vir-gi-nia
+na-tion
+Chris-tian
+pre-cious
+gra-cious
+re-li-gious
+glo-ri-ous
+re-li-gion
+mil-lion
+dal-liance
+min-ions | mi-nions
+cru-ci-fix-ion
+Sa-vior
+pa-tient
+In-di-a
+li-on
+Zi-on
+No-el
+po-em
 # known limitations of the English rules (they cannot see pronunciation)
 ! an-gels
 ! high-est
-! Sav-ior
 ! qui-et

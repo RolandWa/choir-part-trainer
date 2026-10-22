@@ -14,7 +14,7 @@ Everything runs in the browser: no account, no server, nothing is uploaded.
 - **Practice tools**: bar range, loop, tempo, metronome, count-in, first-note button, the current note is highlighted
 - **Same engraving as Michael Eskin’s ABC Tools**: the score is drawn with [abcjs](https://github.com/paulrosen/abcjs);
   if abcjs cannot be loaded, a built-in simplified renderer takes over
-- **Readable music**: note names, lyrics with several verses, repeats with first and second endings, triplets, ties
+- **Readable music**: note names, lyrics with several verses, repeats with first and second endings, D.C./D.S./Fine/Coda jumps, triplets, ties
 - **Words under the right notes**: if a piece only has its words as a poem after the tune (`W:`), the app splits them
   into syllables (Polish, English, German, Latin) and places them under the notes; one tap saves them as `w:` lines
 - **Print and PDF**: print on A4, or download a PDF directly (works on phones too)
@@ -108,6 +108,12 @@ w: Al-le-lu-ia, A-men.
 - `^` sharp, `_` flat, `=` natural; `z` rest; `|:` `:|` repeats; `[1` `[2` endings.
 - Tenor parts use `clef=treble-8` and are written as printed (an octave above the sounding pitch), like in
   abcjs and other ABC tools; the app plays and checks them an octave lower.
+- `octave=-1` in `V:` or `K:` means the part is written an octave higher (`c` is middle C); it is shown and played
+  in the right place. `transpose=-2` changes only the sound (two semitones lower). `treble+8`, `bass-8` and
+  `bass+8` clefs sound an octave higher or lower than written.
+- Jumps are played: `!D.C.!`, `!D.S.!` with the segno `S` (`!segno!`), `!fine!`, `!D.C.alfine!`, `!D.S.alcoda!`
+  with the coda signs `O` (`!coda!`), and the same words as text above a note (`"^D.C. al Fine"`, `"^To Coda"`).
+  The second time through, repeats are played once, with the last ending.
 
 The full cheat sheet is built into the app.
 

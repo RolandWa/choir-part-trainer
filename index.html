@@ -549,8 +549,8 @@ textarea{width:100%;margin-top:8px;font:16px/1.5 ui-monospace,"SF Mono",Menlo,Co
 </section>
 <button id="tPill" class="tpill" hidden data-i18n-aria="tunTitle"><span id="tPillDot" class="pdot"></span><span id="tPillTxt">–</span></button>
 
-<script src="i18n.js?v=1.0.0"></script>
-<script src="warmups.js?v=1.0.0"></script>
+<script src="i18n.js?v=1.0.1"></script>
+<script src="warmups.js?v=1.0.1"></script>
 <script>
 // ===== PURE START =====
 const LETTERS='CDEFGAB';
@@ -591,6 +591,8 @@ function parseKey(str){
   let s=(str||'').trim(), clef=null;
   const cm=/\bclef\s*=\s*([^\s\]]+)/i.exec(s);
   if(cm) clef=cm[1];
+  const om=/\boctave\s*=\s*([+-]?\d+)/i.exec(s), trm=/\btranspose\s*=\s*([+-]?\d+)/i.exec(s);
+  const mods={octave:om?+om[1]:null,transpose:trm?+trm[1]:null};
   s=s.replace(/\b[a-z]+\s*=\s*[^\s\]]+/gi,'').trim();
   const toks=s.split(/\s+/).filter(Boolean);
   let k=toks[0]||'', mode='';
@@ -599,9 +601,9 @@ function parseKey(str){
     if(/^(bass|treble|alto|tenor)/i.test(t)) clef=clef||t;
     else if(!mode&&/^(maj|min|m$|ion|aeo|dor|phr|lyd|mix|loc)/i.test(t)) mode=t;
   }
-  if(!k||/^none$/i.test(k)) return {fifths:0,clef,ok:true};
+  if(!k||/^none$/i.test(k)) return Object.assign({fifths:0,clef,ok:true},mods);
   const m=/^([A-Ha-h])([#b]?)(.*)$/.exec(k);
-  if(!m) return {fifths:0,clef,ok:false};
+  if(!m) return Object.assign({fifths:0,clef,ok:false},mods);
   let L=m[1].toUpperCase(); if(L==='H') L='B';
   const pos=FIFTHS_POS[L]+(m[2]==='#'?7:m[2]==='b'?-7:0);
   const md=(m[3]||mode).toLowerCase();
@@ -615,7 +617,7 @@ function parseKey(str){
   else if(md.startsWith('loc')) off=-5;
   else ok=false;
   let fi=pos+off; if(fi>7||fi<-7){ ok=false; fi=Math.max(-7,Math.min(7,fi)); }
-  return {fifths:fi,clef,ok};
+  return Object.assign({fifths:fi,clef,ok},mods);
 }
 function keyAccMap(fi){ const m={}; if(fi>0) for(let i=0;i<fi;i++) m[SHARP_ORDER[i]]=1; else for(let i=0;i<-fi;i++) m[FLAT_ORDER[i]]=-1; return m; }
 function defaultUnit(meter){ return meter&&meter.num/meter.den<0.75?1/16:1/8; }
@@ -624,6 +626,9 @@ function normClef(c){
   c=String(c||'').trim().toLowerCase();
   if(!c||c==='none'||c==='treble'||c==='g'||c==='g2') return {clef:'treble',ok:true};
   if(/^treble[-_]?8$/.test(c)||c==='tenor'||c==='g-8') return {clef:'treble-8',ok:true};
+  if(/^(treble|g)[+^]8$/.test(c)) return {clef:'treble',ok:true,o8:1};
+  if(/^(bass|f)[+^]8$/.test(c)) return {clef:'bass',ok:true,o8:1};
+  if(/^(bass|f)[-_]8$/.test(c)) return {clef:'bass',ok:true,o8:-1};
   if(c.startsWith('bass')||c==='f'||c==='f4') return {clef:'bass',ok:true};
   if(c.startsWith('treble')) return {clef:'treble',ok:true};
   return {clef:'treble',ok:false};
@@ -712,7 +717,7 @@ function readNote(s,i){
 function parseABC(text){
   const R={title:'',composer:'',meter:{num:4,den:4,sym:null},unit:null,tempo:null,fifths:0,voices:[],warnings:[],lines:[],words:[]};
   const vmap={}, comps=[];
-  let V=null, inBody=false, gMeter=R.meter, gKey=0, gClef=null, lineSeen=new Set();
+  let V=null, inBody=false, gMeter=R.meter, gKey=0, gClef=null, gO8=0, gOct=null, gTr=null, lineSeen=new Set();
   let curLineStart=0, curLineIdx=0, tokStart=0, titleIsFirst=false, lastField=null, blankAfterBody=false, xCount=0;
   const warn=(k,p)=>{ const v=V?V.id:null, key=k+'|'+JSON.stringify(p||{})+'|'+v; if(R.warnings.length<10&&!R.warnings.some(w=>w._k===key)) R.warnings.push({k,p:p||{},v,_k:key}); };
   const unitLen=()=>R.unit||defaultUnit(R.meter);
@@ -721,12 +726,12 @@ function parseABC(text){
     if(!vmap[id]){
       const v={id,name:'',clef:null,fifths:gKey,keyAcc:keyAccMap(gKey),meter:gMeter,measures:[],events:[],verses:0,
         cur:null,pos:0,pendStartRep:false,pendVolta:0,curVolta:0,lastNote:null,lastEv:null,pendBroken:1,
-        tupRemain:0,tupFactor:1,tupId:0,curTup:0,curTupN:0,beamBreak:true,lineEvents:[],verseIdx:0,measAcc:{},started:false};
+        tupRemain:0,tupFactor:1,tupId:0,curTup:0,curTupN:0,beamBreak:true,lineEvents:[],verseIdx:0,measAcc:{},started:false,jumps:[],pendJ:[]};
       vmap[id]=v; R.voices.push(v);
     }
     return vmap[id];
   }
-  function setClef(vs,c){ const nc=normClef(c); if(!nc.ok){ const pv=V; V=vs; warn('w.clef',{c}); V=pv; } vs.clef=nc.clef; }
+  function setClef(vs,c){ const nc=normClef(c); if(!nc.ok){ const pv=V; V=vs; warn('w.clef',{c}); V=pv; } vs.clef=nc.clef; vs.o8=nc.o8||0; }
   function applyV(str){
     str=(str||'').trim();
     const id=str.split(/\s+/)[0]||'1';
@@ -737,6 +742,8 @@ function parseABC(text){
       if(key==='name'||key==='nm'){ vs.name=val; named=true; }
       else if((key==='sname'||key==='snm')&&!named&&!vs.name) vs.name=val;
       else if(key==='clef') setClef(vs,val);
+      else if(key==='octave'&&/^[+-]?\d+$/.test(val)) vs.octave=+val;
+      else if(key==='transpose'&&/^[+-]?\d+$/.test(val)) vs.transp=+val;
     }
     for(const tk of str.replace(re,' ').split(/\s+/).slice(1)) if(/^(bass|treble|tenor|alto)/i.test(tk)) setClef(vs,tk);
   }
@@ -755,17 +762,24 @@ function parseABC(text){
       const kk=parseKey(v); if(!kk.ok) warn('w.badKey',{v});
       if(!inBody){
         gKey=kk.fifths; R.fifths=kk.fifths;
-        if(kk.clef){ const nc=normClef(kk.clef); if(!nc.ok) warn('w.clef',{c:kk.clef}); gClef=nc.clef; }
+        if(kk.clef){ const nc=normClef(kk.clef); if(!nc.ok) warn('w.clef',{c:kk.clef}); gClef=nc.clef; gO8=nc.o8||0; }
+        if(kk.octave!=null) gOct=kk.octave;
+        if(kk.transpose!=null) gTr=kk.transpose;
         for(const vs of R.voices) if(!vs.started){ vs.fifths=gKey; vs.keyAcc=keyAccMap(gKey); }
       } else {
         const vs=V||getVoice('1');
         if(!vs.started) vs.fifths=kk.fifths;
         vs.keyAcc=keyAccMap(kk.fifths);
         if(kk.clef) setClef(vs,kk.clef);
+        if(kk.octave!=null) vs.kOct=kk.octave;
+        if(kk.transpose!=null) vs.kTr=kk.transpose;
       }
     }
     else if(k==='V') applyV(v);
   }
+  function voiceOctave(v){ return v.octave!=null?v.octave:v.kOct!=null?v.kOct:(gOct||0); }
+  function voiceTranspose(v){ return v.transp!=null?v.transp:v.kTr!=null?v.kTr:(gTr||0); }
+  function addJump(ty){ if(ty){ (V.pendJ=V.pendJ||[]).push(ty); } }
   function newMeasure(){
     const v=V;
     if(v.pendVolta) v.curVolta=v.pendVolta;
@@ -775,6 +789,7 @@ function parseABC(text){
   }
   function closeBar(t,vol){
     const v=V;
+    if(v.pendJ&&v.pendJ.length){ const mm=v.cur||v.measures[v.measures.length-1]; if(mm){ for(const ty of v.pendJ) v.jumps.push({type:ty,m:mm.idx,at:'end'}); v.pendJ=[]; } }
     const endRep=t[0]===':', startRep=t.length>1&&t[t.length-1]===':';
     let type='single';
     if(t.includes('||')) type='double'; else if(t.includes('|]')||t.includes('[|')) type='final';
@@ -790,6 +805,7 @@ function parseABC(text){
     const v=V; v.started=true;
     if(!lineSeen.has(v)){ if(!v.contLine){ v.lineEvents=[]; v.verseIdx=0; v.lgN=(v.lgN||0)+1; } v.contLine=false; lineSeen.add(v); }
     if(!v.cur) newMeasure();
+    if(v.pendJ&&v.pendJ.length){ const at=v.cur.events.length?'mid':'start'; for(const ty of v.pendJ) v.jumps.push({type:ty,m:v.cur.idx,at}); v.pendJ=[]; }
     let dur=unitLen()*mult;
     if(v.pendBroken!==1){ dur*=v.pendBroken; v.pendBroken=1; }
     let tid=0, tn=0;
@@ -799,15 +815,17 @@ function parseABC(text){
     if(extra) Object.assign(ev,extra);
     if(kind==='note'){
       const ln=v.lastNote, tieSrc=(ln&&ln.tieNext&&v.lastEv===ln)?ln:null;
+      // octave= moves the notes on the staff and in sound; transpose= changes only the sound (ABC 2.1, 4.6; as abcjs)
+      const oct=voiceOctave(v), tr=voiceTranspose(v);
       for(const n of notes){
-        const step=n.octave*7+LETTERS.indexOf(n.letter);
+        const step=(n.octave+oct)*7+LETTERS.indexOf(n.letter);
         let alter;
         if(n.acc){ alter={'^':1,'^^':2,'_':-1,'__':-2,'=':0}[n.acc]; v.measAcc[step]=alter; }
         else {
           const tp=tieSrc&&tieSrc.notes.find(x=>x.step===step);
           alter=tp?tp.alter:((step in v.measAcc)?v.measAcc[step]:(v.keyAcc[n.letter]||0));
         }
-        const midi=12*(n.octave+1)+SEMI[n.letter]+alter;
+        const midi=12*(n.octave+oct+1)+SEMI[n.letter]+alter+tr;
         const acc=n.acc?(n.acc==='^'?'#':n.acc==='^^'?'x':n.acc==='_'?'b':n.acc==='__'?'bb':'n'):null;
         ev.notes.push({midi,step,letter:n.letter,alter,acc});
       }
@@ -862,8 +880,9 @@ function parseABC(text){
       const c=s[i]; tokStart=i;
       if(c==='%') break;
       if(c===' '||c==='\t'){ V.beamBreak=true; i++; continue; }
-      if(c==='"'){ const e=s.indexOf('"',i+1); i=e<0?s.length:e+1; continue; }
-      if(c==='!'||c==='+'){ const e=s.indexOf(c,i+1); i=e<0?i+1:e+1; continue; }
+      if(c==='"'){ const e=s.indexOf('"',i+1); if(e>0) addJump(jumpKind(s.slice(i+1,e).replace(/^[\^_<>]|^@[^ ]*\s*/,''))); i=e<0?s.length:e+1; continue; }
+      if(c==='!'||c==='+'){ const e=s.indexOf(c,i+1); if(e>0) addJump(jumpKind(s.slice(i+1,e))); i=e<0?i+1:e+1; continue; }
+      if(c==='$'){ i++; continue; }
       if(c==='{'){ const e=s.indexOf('}',i+1); i=e<0?s.length:e+1; continue; }
       if(c==='|'||(c===':'&&(s[i+1]===':'||s[i+1]==='|'))||(c==='['&&s[i+1]==='|')){
         let j=i, t='';
@@ -926,7 +945,12 @@ function parseABC(text){
         if(nt){ addEvent('note',[nt],nt.mult); i=nt.end; continue; }
         warn('w.acc',{c}); i++; continue;
       }
+      // H right before a note, chord, slur or another decoration is the fermata sign (ABC 2.1, 4.14);
+      // H followed by a space, a length or an octave mark is most likely the German/Polish note H
+      if(c==='H'&&/^[\^_=A-Ga-gzx\[({"!+.~HLMOPSTJRuv]/.test(s[i+1]||'')){ i++; continue; }
       if(c==='H'||c==='h'){ warn('w.H'); i++; while(s[i]===','||s[i]==="'") i++; continue; }
+      if(c==='O'){ addJump('coda'); i++; continue; }
+      if(c==='S'){ addJump('segno'); i++; continue; }
       if(/[IJKLMNOPQRSTUVWuv]/.test(c)){ i++; continue; }
       if(c==='&'){ warn('w.overlay'); i++; continue; }
       if(/\d/.test(c)){ warn('w.digit'); i++; continue; }
@@ -978,9 +1002,15 @@ function parseABC(text){
   R.composer=comps.join(', ');
   if(!R.voices.length) getVoice('1');
   for(const vs of R.voices){
-    vs.clef=vs.clef||gClef||'treble';
-    // treble-8 (tenor): written as printed, sounds an octave lower – same convention as abcjs and other ABC tools
-    if(vs.clef==='treble-8') for(const ev of vs.events) for(const n of ev.notes) n.midi-=12;
+    if(!vs.clef){ vs.clef=gClef||'treble'; vs.o8=gClef?gO8:0; }
+    // treble-8 (tenor): written as printed, sounds an octave lower – same convention as abcjs and other ABC tools;
+    // treble+8, bass-8 and bass+8 likewise sound an octave higher or lower than written
+    const cs=(vs.clef==='treble-8'?-12:0)+12*(vs.o8||0);
+    if(cs) for(const ev of vs.events) for(const n of ev.notes) n.midi+=cs;
+    // sounding pitch = 12*(octave+1)+semitone of the written note + soundShift (used for previews)
+    vs.soundShift=12*voiceOctave(vs)+voiceTranspose(vs)+cs;
+    if(vs.pendJ&&vs.pendJ.length&&vs.measures.length){ for(const ty of vs.pendJ) vs.jumps.push({type:ty,m:vs.measures.length-1,at:'end'}); }
+    delete vs.pendJ;
     V=vs;
     const M=vs.measures, full=m=>m.meter?m.meter.num/m.meter.den:null;
     let startNo=1;
@@ -997,7 +1027,71 @@ function parseABC(text){
   V=null;
   const ne=R.voices.filter(v=>v.measures.length);
   if(ne.length>1&&ne.some(v=>v.measures.length!==ne[0].measures.length)) warn('w.bars',{list:ne.map(v=>(v.name||v.id)+': '+v.measures.length).join(', ')});
+  // D.C. / D.S. / Fine / Coda marks of all parts, by bar (a mark written in one part applies to the whole piece)
+  const seenJ=new Set(); R.jumps=[];
+  for(const vs of R.voices) for(const j of vs.jumps){ const k=j.type+'|'+j.m+'|'+j.at; if(!seenJ.has(k)){ seenJ.add(k); R.jumps.push(j); } }
+  R.jumps.sort((a,b)=>a.m-b.m||JUMP_AT[a.at]-JUMP_AT[b.at]);
+  if(ne.length){
+    const pl=jumpPlan(R.jumps,ne[0].measures.length);
+    if(pl&&pl.noSegno) warn('w.noSegno');
+    if(pl&&pl.noCoda) warn('w.noCoda');
+  }
   return R;
+}
+
+// ----- D.C. / D.S. / Fine / Coda -----
+// Decorations (!D.C.!, !D.S.alcoda!, !fine!, !segno!, !coda!, O, S – ABC 2.1, 4.14) and text above the notes
+// ("^D.C. al Fine", "^To Coda") become marks {type, m: bar index, at: 'start'|'mid'|'end' of the bar}.
+function jumpKind(raw){
+  const x=String(raw||'').trim().toLowerCase().replace(/\s+/g,' ');
+  if(!x||x.length>24) return null;
+  if(x==='segno') return 'segno';
+  if(x==='coda') return 'coda';
+  if(/^(to ?coda|al coda|da ?coda|vai al coda)$/.test(x)) return 'tocoda';
+  if(x==='fine') return 'fine';
+  let m=/^(d\. ?c\.?|da ?capo)(?: ?al ?(fine|coda))?$/.exec(x); if(m) return 'dc'+(m[2]?'-'+m[2]:'');
+  m=/^(d\. ?s\.?|dal ?segno)(?: ?al ?(fine|coda))?$/.exec(x); if(m) return 'ds'+(m[2]?'-'+m[2]:'');
+  return null;
+}
+const JUMP_AT={start:0,mid:1,end:2};
+// A mark is a point between bars ("boundary" b = number of bars before it). Which point depends on its role:
+const jStart=j=>j.at==='end'?j.m+1:j.m;   // where segno / Coda begins
+const jLeave=j=>j.at==='start'?j.m:j.m+1; // where "To Coda" leaves
+const jEnd=j=>j.m+1;                      // D.C., D.S. and Fine act at the end of their bar
+// Works out the first D.C./D.S. in a piece of n bars: where it jumps from and to, and where the second time ends.
+function jumpPlan(J,n){
+  const cmd=(J||[]).find(j=>/^d[cs]/.test(j.type)); if(!cmd) return null;
+  const end=Math.min(jEnd(cmd),n), al=cmd.type.split('-')[1]||null, plan={end,start:0,stopAt:null,leaveAt:null,codaAt:null,noSegno:false,noCoda:false};
+  if(cmd.type.startsWith('ds')){ const sg=J.find(j=>j.type==='segno'&&jStart(j)<end); if(sg) plan.start=jStart(sg); else plan.noSegno=true; }
+  const st=plan.start;
+  if(al!=='coda'){ const f=J.find(j=>j.type==='fine'&&jEnd(j)>st); if(f) plan.stopAt=jEnd(f); }
+  if(al!=='fine'){
+    const codas=J.filter(j=>j.type==='coda'), to=J.find(j=>j.type==='tocoda'&&jLeave(j)>st&&jLeave(j)<=end);
+    let leave=null, cj=null;
+    if(to){ leave=jLeave(to); cj=codas.find(j=>jStart(j)>leave); }
+    else { const first=codas.find(j=>jLeave(j)>st&&jLeave(j)<=end); if(first){ leave=jLeave(first); cj=codas.find(j=>j!==first&&jStart(j)>leave); } }
+    if(leave!=null&&cj){ plan.leaveAt=leave; plan.codaAt=Math.min(jStart(cj),n); }
+    else if(al==='coda') plan.noCoda=true;
+  }
+  if(plan.stopAt!=null&&plan.leaveAt!=null){ if(plan.stopAt<=plan.leaveAt) plan.leaveAt=plan.codaAt=null; else plan.stopAt=null; }
+  return plan;
+}
+// Bars in playing order. Without D.C./D.S. this is expandRepeats. With one: first time through with repeats up to the
+// D.C./D.S., then from the beginning / the segno without repeats (only the last ending of each repeat is played),
+// until Fine, or to the "To Coda" point and on to the Coda. Bars after the D.C. are played afterwards if nothing ends earlier.
+function playOrder(M,J){
+  const n=M.length, plan=jumpPlan(J,n);
+  if(!plan) return expandRepeats(M);
+  const seq=expandRepeats(M.slice(0,plan.end));
+  const lastEnd=new Array(n).fill(0);
+  for(let i=0;i<n;){ if(!M[i].volta){ i++; continue; } let j=i, mx=0; while(j<n&&M[j].volta){ mx=Math.max(mx,M[j].volta); j++; } for(let k=i;k<j;k++) lastEnd[k]=mx; i=j; }
+  for(let i=plan.start;i<n;i++){
+    if(plan.stopAt!=null&&i===plan.stopAt) return seq;
+    if(plan.leaveAt!=null&&i===plan.leaveAt){ for(const k of expandRepeats(M.slice(plan.codaAt))) seq.push(k+plan.codaAt); return seq; }
+    if(M[i].volta&&M[i].volta<lastEnd[i]) continue;
+    seq.push(i);
+  }
+  return seq;
 }
 
 function expandRepeats(M){
@@ -1028,7 +1122,7 @@ function buildTimeline(R,vi,fromNo,toNo){
     const a=fromNo!=null?fromNo:M[0].number, b=toNo!=null?toNo:M[M.length-1].number;
     const lo=Math.min(a,b), hi=Math.max(a,b);
     seq=M.filter(m=>m.number>=lo&&m.number<=hi).map(m=>m.idx);
-  } else seq=expandRepeats(M);
+  } else seq=playOrder(M,R.jumps);
   if(!seq.length) return null;
   const items=[], audio=[], segs=[], starts=[]; let t=0;
   for(const mi of seq){ starts.push(t); segs.push({mi,start:t,len:M[mi].len,meter:M[mi].meter}); t+=M[mi].len; }
@@ -1375,16 +1469,20 @@ const LYR_FN={
   pl:'i w z na nie się sie jest to do że ze od po już jak o a ty mi nas pan bóg bog dla gdy go jej ich nam wam',
   de:'und der die das ist ein eine nicht mit zu dem den des ich du wir herr gott auf sich im dir mir uns',
   en:'the and of to is thy thee thou lord god with for that his he my be all our we o shall from are',
-  la:'et est non ad cum de te me qui quae quod sed deus deum deo dominus domine dominum tu nobis pax sanctus sancte sancta gloria amen alleluia excelsis mea meus meum tua tuum tuae christe christus eleison kyrie ave maria gratia plena ex pro per ut nos sunt mundi dei agnus in sicut nunc semper saecula saeculorum patri filio spiritui pater noster caelis nomen regnum hodie ora mater virgo salve regina ecce venite adoremus laudate laudamus miserere mei tibi te lux rex iesu jesu cui hoc atque quia quem nostra ego'
+  la:'et est non cum te qui quae quod sed deus deum deo dominus domine dominum tu nobis pax sanctus sancte sancta gloria amen alleluia excelsis mea meus meum tua tuum tuae christe christus eleison kyrie ave maria gratia plena ut nos sunt mundi dei agnus sicut nunc semper saecula saeculorum patri filio spiritui pater noster caelis nomen regnum hodie ora mater virgo salve regina ecce venite adoremus laudate laudamus miserere mei tibi te lux rex iesu jesu cui hoc atque quia quem nostra ego'
 };
 function lyrDetectLang(text){
+  const sc=lyrLangScores(text);
+  let best='xx', bv=0.9; for(const l in sc) if(sc[l]>bv){ bv=sc[l]; best=l; }
+  return best;
+}
+function lyrLangScores(text){
   const s=(text||'').toLowerCase(), sc={pl:0,de:0,en:0,la:0};
   sc.pl+=5*((s.match(/[ąćęłńśźż]/g)||[]).length); sc.de+=5*((s.match(/[äöüß]/g)||[]).length);
   const words=s.match(/\p{L}+/gu)||[];
   for(const l in LYR_FN){ const set=new Set(LYR_FN[l].split(' ')); for(const w of words) if(set.has(w)) sc[l]+=1; }
   for(const w of words) if(/(us|um|ae|orum|arum|ibus|is|es|ate|ite|amus|emus|tur|unt|ent)$/.test(w)&&w.length>3&&!/[ąćęłńśźżäöüßwk]/.test(w)) sc.la+=0.35;
-  let best='xx', bv=0.9; for(const l in sc) if(sc[l]>bv){ bv=sc[l]; best=l; }
-  return best;
+  return sc;
 }
 const lyrBase=ch=>ch.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const LYR_MERGE={pl:[],de:['ei','ai','au','eu','äu','ie','ee','aa','oo','ey','ay'],en:['ai','ay','au','ea','ee','ei','ey','ie','oa','oi','oo','ou','oy','ue','ui','eu'],la:['ae','oe','au'],xx:null};
@@ -1510,7 +1608,21 @@ function lyrSyllabify(word,lang){
       let j=k;
       while(j<=e){
         const pair=j<e?L[j].c+L[j+1].c:'';
+        if(lang==='en'&&j+2<=e&&(L[j].c+L[j+1].c+L[j+2].c==='eau'||(L[j].c+L[j+1].c+L[j+2].c==='eou'&&j>0&&'tgc'.includes(L[j-1].c)))){ nuc.push([j,j+2]); j+=3; continue; }
         let merge=!!pair&&LYR_MERGE[lang].includes(pair)&&j+1!==hiatusAt;
+        // English: eau and -teous/-geous are one syllable (beau-ty, righ-teous, gor-geous); oe at the end is one (woe, does, but No-el, po-em); after n g s t c x, ll and v,
+        // i + a/o/u is one syllable (Vir-gin-ia, na-tion, pre-cious, mil-lion, Sa-vior, but glo-ri-ous, In-di-a)
+        if(lang==='en'&&pair){
+          if(pair==='oe') merge=j+2===n||(j+3===n&&w[n-1]==='s');
+          else if(L[j].c==='i'&&j>0&&!isV[j-1]){
+            const p=L[j-1].c, pp=j>1?L[j-2].c:'';
+            if('aou'.includes(L[j+1].c)&&('ngstcx'.includes(p)||(p==='l'&&pp==='l')||(p==='v'&&L[j+1].c==='o'))){
+              if(L[j+1].c==='o'&&j+2<=e&&L[j+2].c==='u'){ nuc.push([j,j+2]); j+=3; continue; }   // pre-cious, gra-cious
+              merge=true;
+            }
+            else if(L[j+1].c==='e'&&p==='t'&&w[j+2]==='n') merge=true;
+          }
+        }
         // Polish: i before a vowel only softens the consonant (nie, wia-ra, me-lo-dia); au is one syllable except
         // after na-/za- (na-u-ka, za-u-fa-nie); eu only at the start (Eu-ro-pa, but Ma-te-usz, mu-ze-um)
         if(lang==='pl'&&pair){ if(L[j].c==='i') merge=true; else if(pair==='au') merge=!(j===1&&/^(na|za)u/.test(w)); else if(pair==='eu') merge=j===0; }
@@ -1527,10 +1639,14 @@ function lyrSyllabify(word,lang){
       const ei=last[0], before=ei>0&&!isV[ei-1]?L[ei-1].c:null, tail=w.slice(ei);
       let silent=false;
       if(before&&tail==='e') silent=!(before==='l'&&ei>1&&!isV[ei-2]);
-      else if(before&&tail==='ed') silent=!'td'.includes(before);
-      else if(before&&tail==='es') silent=!('sxzcg'.includes(before)||(before==='h'&&ei>1&&'cs'.includes(L[ei-2].c)));
+      else if(before&&tail==='ed') silent=!('td'.includes(before)||(before==='l'&&ei>1&&!isV[ei-2]));
+      else if(before&&tail==='es') silent=!('sxzcg'.includes(before)||(before==='h'&&ei>1&&'cs'.includes(L[ei-2].c))||(before==='l'&&ei>1&&!isV[ei-2]));
       if(silent) nuc.pop();
     }
+  }
+  if(lang==='en'&&nuc.length>1){
+    const m=/^(.*[^aeiouy])e(ly|ful|ness|ment|less)$/.exec(w);
+    if(m&&!/[^aeiouy]l$/.test(m[1])&&/[aeiouy]/.test(m[1])){ const ei=m[1].length, q=nuc.findIndex(x=>x[0]===ei&&x[1]===ei); if(q>0) nuc.splice(q,1); }
   }
   if(nuc.length===1) return [word];
   // consonant units between nuclei
@@ -1590,7 +1706,7 @@ function autoLyrics(R){
   if(!VS.length||R.voices.some(v=>v.verses>0)) return null;
   const verses=lyrVerses(R.words); if(!verses.length) return null;
   const lang=lyrDetectLang(verses.map(v=>v.lines.join(' ')).join(' '));
-  const lineLang=l=>{ if(lang==='la') return lang; const x=lyrDetectLang(l); return x==='la'&&(l.toLowerCase().match(/\p{L}+/gu)||[]).length>=2?'la':lang; };
+  const lineLang=l=>{ if(lang==='la') return lang; const sc=lyrLangScores(l); return sc.la>=2&&sc.la>(sc[lang]||0)+0.5?'la':lang; };
   const syl=verses.map(vs=>vs.lines.map(l=>lyrSyllables(l,lineLang(l))));
   const byLine=new Map(), info={lang,verses:verses.map((vs,i)=>({label:vs.label,n:syl[i].reduce((a,b)=>a+b.length,0),voices:[]}))};
   for(const v of VS){
@@ -1724,7 +1840,7 @@ function abcDisplay(R,text,show,names,naming){
 // e.g. 'https://your-user.github.io/choir-part-trainer/'.
 const SHARE_URL='';
 // Version shown in the footer. tools/release.py updates it together with the ?v= numbers of the script files.
-const APP_VERSION='1.0.0';
+const APP_VERSION='1.0.1';
 // Optional address of the source repository. Leave empty to detect it on GitHub Pages automatically.
 const REPO_URL='';
 
@@ -2910,7 +3026,7 @@ function insertNote(n){
   insertText(accStr+letter+marks+lenStr(S.pal.dur*(S.pal.dot?1.5:1)));
   const v=S.parsed&&S.parsed.voices[S.vi];
   const alter=S.pal.acc?{'#':1,'b':-1,'n':0}[S.pal.acc]:(keyAccMap(v?v.fifths:0)[L]||0);
-  preview([12*(o+1)+SEMI[L]+alter-(v&&v.clef==='treble-8'?12:0)],0.45);
+  preview([12*(o+1)+SEMI[L]+alter+(v&&v.soundShift!=null?v.soundShift:0)],0.45);
   S.pal.acc=''; S.pal.dot=false;
 }
 function doAct(a){
