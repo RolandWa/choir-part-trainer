@@ -118,6 +118,27 @@ node tests/run.js --verbose    także lista znanych ograniczeń
 ```
 Skrypt `tools/release.py` uruchamia testy przed opublikowaniem wersji i zatrzymuje się, gdy któryś nie przejdzie.
 
+**Testy w przeglądarce** – `tests/browser/run.js` otwiera prawdziwą aplikację w przeglądarce Chromium (bez okna)
+i sprawdza to, czego nie widać w testach powyżej: wygląd w trzech językach, rysowanie nut, wybór głosu, ostrzeżenia,
+słowa z `W:`, odtwarzanie (kolejność taktów z D.C., fermaty) z podświetlaniem nut, syntezator zastępczy,
+przyciski transpozycji, link przekazany drugiej osobie, pobieranie PDF i `.abc`, zbiory utworów, nagrywanie
+i stroik z udawanym mikrofonem, rozgrzewki i pomoc. Na GitHubie uruchamiają się same (druga pozycja w zakładce
+**Actions**). Na komputerze potrzebny jest jeszcze Playwright:
+```
+npm install --no-save playwright && npx playwright install chromium     jeden raz
+node tests/browser/run.js                                               wszystkie (ok. 25 sekund)
+```
+Testy wydruku sprawdzają strona po stronie „Pobierz PDF” i drukowanie z przeglądarki dla kilku utworów (od krótkiego
+po partyturę, w której jedna linia nut jest wyższa niż kartka A4). Na każdej stronie muszą być nuty, każda
+pięciolinia musi mieć wszystkie 5 linii (obcięta albo zbyt blada ma mniej), wszystkie pięciolinie muszą się
+wydrukować, odstęp linii musi być czytelny, marginesy muszą być puste i nie może być koloru – także w trybie
+ciemnym i ze znacznikami stroika. Osobny test pilnuje, żeby niewidoczne pola do stukania w nuty nie miały ramek
+na ekranie i nie trafiały na papier ani do PDF-a. Do sprawdzania wydruku potrzebny jest program `pdftoppm` (na Macu
+`brew install poppler`); bez niego te testy są pomijane, a na GitHubie instalują się same.
+Testy nie korzystają z internetu. Test rysowania przez abcjs działa tylko wtedy, gdy jest plik
+`vendor/abcjs-basic-min.js` (polecenie `python tools/fetch_abcjs.py`); na GitHubie jest to krok dodatkowy, którego
+błąd nie zmienia wyniku na czerwony. Folder `node_modules`, który tworzy npm, jest pomijany przez git (`.gitignore`).
+
 **Dodawanie własnych przypadków** – to zwykłe pliki tekstowe:
 - `tests/syllables/pl.txt` – słowo podzielone łącznikami, np. `Be-tle-jem`. Kilka poprawnych podziałów
   oddzielasz kreską: `pa-ste-rze | pas-te-rze`.

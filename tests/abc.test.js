@@ -2,6 +2,7 @@
 // eq(actual, expected) compares as JSON. Run with: node tests/run.js abc.test
 'use strict';
 module.exports = ({ test, eq, ok, app, abcjsAddWords }) => {
+  const near = (a, b, tol, msg) => { if (Math.abs(a - b) > tol) throw new Error((msg ? msg + ': ' : '') + 'expected ' + b + ' ± ' + tol + ', got ' + a); };
   const parse = body => app.parseABC('X:1\nT:t\nM:4/4\nL:1/4\nK:C\n' + body + '\n');
   const midis = (R, v = 0) => R.voices[v].events.filter(e => e.kind === 'note').map(e => e.notes.map(n => n.midi).join('+'));
   const words = (R, row = 0, v = 0) => R.voices[v].events.filter(e => e.kind === 'note').map(e => (e.lyrics[row] ? e.lyrics[row].t : ''));
@@ -106,6 +107,136 @@ module.exports = ({ test, eq, ok, app, abcjsAddWords }) => {
     eq(pitches('V:B clef=bass octave=-1\nK:C\nV:B', 'C|').R.voices[0].soundShift, -12);
     eq(pitches('V:T clef=treble-8\nK:C\nV:T', 'C|').R.voices[0].soundShift, -12);
     eq(pitches('V:S transpose=-2\nK:C\nV:S', 'C|').R.voices[0].soundShift, -2);
+  });
+
+  // ----- C clefs (1.1): tenor and alto sound as written, like abcjs -----
+  test('clef=tenor is the C clef and sounds as written', () => {
+    const r = pitches('V:T clef=tenor\nK:C\nV:T', 'C, E, G, C|');
+    eq(r.midi, ['48', '52', '55', '60']); eq(r.R.voices[0].clef, 'tenor'); eq(r.warn, []);
+  });
+  test('clef=alto sounds as written, without a warning', () => {
+    const r = pitches('V:A clef=alto\nK:C\nV:A', 'G, C E G|');
+    eq(r.midi, ['55', '60', '64', '67']); eq(r.warn, []);
+  });
+  test('a tenor-clef part written an octave high (as for treble-8) gives a hint', () => ok(pitches('V:T clef=tenor\nK:C\nV:T', 'c d e f|g a b c\'|').warn.includes('w.tenorClef')));
+  test('treble-8 still sounds an octave lower', () => eq(pitches('V:T clef=treble-8\nK:C\nV:T', 'c|').midi, ['60']));
+
+  // ----- tempo words (1.1) -----
+  test('tempo words without a number', () => {
+    const bpm = q => (app.parseTempo(q) || {}).bpm;
+    eq([bpm('"Andante"'), bpm('"Allegro"'), bpm('"Allegretto"'), bpm('"Allegro moderato"'), bpm('"Largo"')], [84, 132, 116, 120, 50]);
+    eq([bpm('"Sehr langsam"'), bpm('"Nicht zu schnell"'), bpm('"Uroczyście"'), bpm('"Slowly"')], [46, 108, 66, 60]);
+  });
+  test('a number in Q: wins over the word', () => eq(app.parseTempo('"Andante" 1/4=76'), { unit: 0.25, bpm: 76 }));
+  test('an unknown word gives no tempo', () => eq(app.parseTempo('"Mit Gefühl"'), null));
+  test('Q:"Adagio" sets the tempo of the piece', () => eq(app.parseABC('X:1\nL:1/4\nQ:"Adagio"\nK:C\nC|\n').tempo.bpm, 70));
+
+  // ----- fermata (1.1): the note lasts twice as long (at most half a whole note longer), in every part -----
+  const twoParts = (s, b) => app.parseABC('X:1\nM:4/4\nL:1/4\nV:S\nV:B clef=bass\nK:C\nV:S\n' + s + '\nV:B\n' + b + '\n');
+  test('fermata H holds the note and the other parts', () => {
+    const R = twoParts('C D E HF | G4 |]', 'C, D, E, F, | G,4 |]'), tl = app.buildTimeline(R, 0);
+    eq(tl.total, 2.25);
+    eq(tl.audio.filter(a => a.v === 0)[3], { v: 0, midi: 65, start: 0.75, dur: 0.5 });
+    eq(tl.audio.filter(a => a.v === 1)[3].dur, 0.5);
+    eq(tl.segs[1].start, 1.25);
+  });
+  test('!fermata! and !invertedfermata! work like H', () => {
+    eq(app.buildTimeline(parse('C D E !fermata!F | G4 |]'), 0).total, 2.25);
+    eq(app.buildTimeline(parse('C D E !invertedfermata!F | G4 |]'), 0).total, 2.25);
+  });
+  test('a long fermata note gets at most half a whole note more', () => eq(app.buildTimeline(parse('C4 | HG4 |]'), 0).total, 2.5));
+  test('a fermata on the bar line holds the last note', () => {
+    const R = parse('C D E F !fermata!| G4 |]');
+    ok(R.voices[0].events[3].fermata); eq(app.buildTimeline(R, 0).total, 2.25);
+  });
+  test('the metronome waits during a fermata', () => eq(app.clickTimes(app.buildTimeline(parse('C D E HF | G4 |]'), 0)).map(c => c.t), [0, 0.25, 0.5, 0.75, 1.25, 1.5, 1.75, 2]));
+  test('a fermata on a rest holds the pause', () => eq(app.buildTimeline(parse('C D E Hz | G4 |]'), 0).total, 2.25));
+
+  // ----- breath mark (1.1): shortens its note, the timing stays -----
+  test('!breath! shortens the note it is written before (a breath after it)', () => {
+    const tl = app.buildTimeline(parse('C D !breath!E F | G4 |]'), 0);
+    eq(tl.audio.map(a => a.dur), [0.25, 0.25, 0.125, 0.25, 1]); eq(tl.total, 2);
+  });
+  test('!breath! on the bar line shortens the last (tied) note', () => {
+    const tl = app.buildTimeline(parse('C D G2- | G2 !breath!| A4 |]'), 0);
+    eq(tl.audio.map(a => a.dur), [0.25, 0.25, 0.875, 1]);
+  });
+  test('the comma stays an octave mark, not a breath', () => eq(midis(parse('C, D, E,')), ['48', '50', '52']));
+
+  // ----- P: parts (1.1) -----
+  const partBars = text => { const R = app.parseABC(text), M = R.voices[0].measures; return { bars: app.buildTimeline(R, 0).seq.map(i => M[i].number), warn: R.warnings.map(w => w.k), R }; };
+  test('P: part order', () => eq(app.expandPartSpec('ABAB'), ['A', 'B', 'A', 'B']));
+  test('P: repeat counts and groups', () => {
+    eq(app.expandPartSpec('A2B').join(''), 'AAB'); eq(app.expandPartSpec('(AB)2C').join(''), 'ABABC');
+    eq(app.expandPartSpec('A.B.A').join(''), 'ABA'); eq(app.expandPartSpec('((AB)2C)2').join(''), 'ABABCABABC');
+  });
+  test('P: header text that is not an order is ignored', () => eq(app.expandPartSpec('Trad.'), []));
+  test('parts are played in the order of P:', () => eq(partBars('X:1\nM:4/4\nL:1/4\nP:ABA\nK:C\nP:A\nC D E F | G A B c |]\nP:B\nc B A G | F E D C |]\n').bars, [1, 2, 3, 4, 1, 2]));
+  test('a part keeps its own repeats', () => eq(partBars('X:1\nM:4/4\nL:1/4\nP:BA\nK:C\nP:A\n|: C D E F :|\nP:B\nc B A G |]\n').bars, [2, 1, 1]));
+  test('inline [P:B] starts a part in the middle of a line', () => eq(partBars('X:1\nM:4/4\nL:1/4\nP:BAB\nK:C\nP:A\nC D E F | [P:B] c B A G |]\n').bars, [2, 1, 2]));
+  test('parts in a piece with several voices', () => {
+    const r = partBars('X:1\nM:4/4\nL:1/4\nP:AB2\nV:S\nV:B clef=bass\nK:C\nP:A\nV:S\nC D E F |]\nV:B\nC, D, E, F, |]\nP:B\nV:S\nG4 |]\nV:B\nG,4 |]\n');
+    eq(r.bars, [1, 2, 2]); eq(app.buildTimeline(r.R, 1).audio.filter(a => a.v === 1).length, 6);
+  });
+  test('a part named in P: but missing in the piece gives a warning', () => {
+    const r = partBars('X:1\nM:4/4\nL:1/4\nP:AXB\nK:C\nP:A\nC D E F |]\nP:B\nc B A G |]\n');
+    eq(r.bars, [1, 2]); ok(r.warn.includes('w.part'));
+  });
+  test('part labels without P: in the header play straight through', () => eq(partBars('X:1\nM:4/4\nL:1/4\nK:C\nP:A\nC D E F |]\nP:B\nc B A G |]\n').bars, [1, 2]));
+  test('bars before the first part label are played first', () => eq(partBars('X:1\nM:4/4\nL:1/4\nP:BA\nK:C\nC4 |\nP:A\nD4 |\nP:B\nE4 |]\n').bars, [1, 3, 2]));
+
+  // ----- transposing the whole piece (1.1) -----
+  const tr = (key, body, t) => { const R = app.parseABC('X:1\nL:1/4\nK:' + key + '\n' + body + '\n'); app.transposeParsed(R, t); return R; };
+  const spelled = R => R.voices[0].events.filter(e => e.kind === 'note').map(e => app.nameOf(e, 'english') + (e.notes[0].acc ? '(' + e.notes[0].acc + ')' : ''));
+  test('transposing up a tone: C major to D major', () => {
+    const R = tr('C', 'C E ^F =B _B c|', 2);
+    eq(R.voices[0].fifths, 2); eq(midis(R), ['62', '66', '68', '73', '72', '74']);
+    eq(spelled(R), ['D', 'F♯', 'G♯(#)', 'C♯(#)', 'C(n)', 'D']);
+  });
+  test('transposing down a tone: C major to B-flat major', () => {
+    const R = tr('C', 'C E ^F B|', -2);
+    eq(R.voices[0].fifths, -2); eq(spelled(R), ['B♭', 'D', 'E(n)', 'A']);
+  });
+  test('the new key has the fewest accidentals; F#/Gb keeps the side of the old key', () => {
+    eq([app.keyForTranspose(0, 1).fifths, app.keyForTranspose(0, 6).fifths, app.keyForTranspose(-1, 1).fifths, app.keyForTranspose(1, -1).fifths], [-5, 6, -6, 6]);
+    eq([app.keyForTranspose(-1, 6).fifths, app.keyForTranspose(-3, -3).fifths, app.keyForTranspose(0, 12).fifths], [5, 0, 0]);
+  });
+  test('an octave keeps the key and moves the notes by an octave', () => { const R = tr('C', 'C|', 12); eq(midis(R), ['72']); eq(R.voices[0].events[0].notes[0].step, 35); });
+  test('accidentals that would need a triple sharp are spelled with the next letter', () => {
+    const R = tr('C', '^^F|', 3);   // F double-sharp + 3 = B sharp... in E-flat major: spelled as a natural letter
+    eq(midis(R), ['70']); ok(Math.abs(R.voices[0].events[0].notes[0].alter) <= 2);
+  });
+  test('transposition is recorded for the score display, sound preview and tuner', () => {
+    const R = tr('G', 'G|', -3);
+    eq([R.transpose, R.fifths, R.voices[0].soundShift], [-3, 4, -3]);
+  });
+  test('transposing a multi-part piece keeps tenor treble-8 an octave lower', () => {
+    const R = app.parseABC('X:1\nL:1/4\nV:S\nV:T clef=treble-8\nK:F\nV:S\nF|\nV:T\nF|\n'); app.transposeParsed(R, 2);
+    eq([midis(R, 0), midis(R, 1)], [['67'], ['55']]); eq([R.voices[0].fifths, R.voices[1].fifths], [1, 1]);
+  });
+
+  // ----- PDF pages (1.1) -----
+  // A4 at 200 dpi like the app: 1654 x 2339 px, margins 118 / 110 / 126 px, title block 122 px
+  const PG = { PW: 1654, PH: 2339, ML: 118, MT: 110, MB: 126, CW: 1418, head: 122 };
+  const fits = pages => pages.every(pg => pg.every(it => it.y >= PG.MT - 1e-6 && it.y + it.h <= PG.PH - PG.MB + 1e-6 && it.x >= PG.ML - 1e-6 && it.x + it.w <= PG.ML + PG.CW + 1e-6));
+  test('PDF: systems fill pages in order and none is cut off', () => {
+    const pages = app.pdfLayout(Array.from({ length: 20 }, () => ({ w: 676, h: 106 })), PG);
+    eq(pages.map(p => p.length), [8, 9, 3]); ok(fits(pages), 'inside the pages'); eq(pages.flat().map(x => x.i), [...Array(20).keys()], 'all systems, in order');
+  });
+  test('PDF: a first system taller than the space under the title stays on page 1, made smaller', () => {
+    const pages = app.pdfLayout([{ w: 676, h: 1000 }, { w: 676, h: 106 }], PG);
+    eq(pages[0].length >= 1, true, 'page 1 is not only the title'); eq(pages[0][0].i, 0); ok(fits(pages), 'inside the pages');
+    ok(pages[0][0].w < PG.CW, 'shrunk'); near(pages[0][0].x + pages[0][0].w / 2, PG.ML + PG.CW / 2, 1, 'centred');
+  });
+  test('PDF: a system taller than a whole page gets a page of its own, shrunk to fit', () => {
+    const pages = app.pdfLayout([{ w: 676, h: 106 }, { w: 676, h: 3000 }, { w: 676, h: 106 }], PG);
+    eq(pages.map(p => p.map(x => x.i)), [[0], [1], [2]]); ok(fits(pages), 'inside the pages');
+  });
+  test('PDF: no page is ever empty', () => {
+    for (const hs of [[50], [4000], [4000, 4000], [800, 800, 800, 800], [100, 2000, 100, 2000]]) {
+      const pages = app.pdfLayout(hs.map(h => ({ w: 676, h })), PG);
+      ok(pages.every(p => p.length > 0), 'heights ' + hs); ok(fits(pages), 'fits ' + hs);
+    }
   });
 
   // ----- warnings that must not appear for correct ABC -----

@@ -7,7 +7,7 @@ Usage:
     add --skip-tests to publish even when tests fail (not recommended)
 
 What it does:
-  0. runs the tests (node tests/run.js) and stops if any fails,
+  0. runs the tests (node tests/run.js, and tests/browser/run.js when Playwright is installed) and stops if any fails,
   1. sets APP_VERSION in index.html,
   2. updates the ?v=... numbers of i18n.js and warmups.js in index.html and warmups.html
      and the cache name in sw.js (so phones load the new files together with the new page),
@@ -65,6 +65,14 @@ def run_tests():
         return
     if r.returncode != 0:
         fail('tests failed – fix them first, or add --skip-tests if you really want to publish.')
+    # browser tests: only when Playwright is installed (npm install --no-save playwright && npx playwright install chromium)
+    browser = ROOT / 'tests' / 'browser' / 'run.js'
+    if browser.exists():
+        r = subprocess.run(['node', str(browser)], cwd=ROOT)
+        if r.returncode == 2:
+            print('Note: Playwright is not installed, so the browser tests were not run (they still run on GitHub).')
+        elif r.returncode != 0:
+            fail('browser tests failed – fix them first, or add --skip-tests if you really want to publish.')
 
 
 def git(*args):

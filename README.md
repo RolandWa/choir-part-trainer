@@ -14,7 +14,7 @@ Everything runs in the browser: no account, no server, nothing is uploaded.
 - **Practice tools**: bar range, loop, tempo, metronome, count-in, first-note button, the current note is highlighted
 - **Same engraving as Michael Eskin’s ABC Tools**: the score is drawn with [abcjs](https://github.com/paulrosen/abcjs);
   if abcjs cannot be loaded, a built-in simplified renderer takes over
-- **Readable music**: note names, lyrics with several verses, repeats with first and second endings, D.C./D.S./Fine/Coda jumps, triplets, ties
+- **Readable music**: note names, lyrics with several verses, repeats with first and second endings, D.C./D.S./Fine/Coda jumps, parts in P: order, fermatas and breath marks, triplets, ties
 - **Words under the right notes**: if a piece only has its words as a poem after the tune (`W:`), the app splits them
   into syllables (Polish, English, German, Latin) and places them under the notes; one tap saves them as `w:` lines
 - **Print and PDF**: print on A4, or download a PDF directly (works on phones too)
@@ -114,6 +114,14 @@ w: Al-le-lu-ia, A-men.
 - Jumps are played: `!D.C.!`, `!D.S.!` with the segno `S` (`!segno!`), `!fine!`, `!D.C.alfine!`, `!D.S.alcoda!`
   with the coda signs `O` (`!coda!`), and the same words as text above a note (`"^D.C. al Fine"`, `"^To Coda"`).
   The second time through, repeats are played once, with the last ending.
+- Fermatas (`H` before a note, `!fermata!`) are held in all parts (twice as long, at most a half note longer);
+  `!breath!` leaves a short breath after its note. (A comma `,` is the octave mark, not a breath.)
+- Parts: `P:A`, `P:B` in the music start parts, `P:ABAB`, `P:A2B` or `P:(AB)2C` in the header gives the order.
+- `clef=tenor` and `clef=alto` are C clefs and sound as written (like abcjs); for a tenor part written an octave
+  up, use `clef=treble-8`.
+- A tempo word without a number (`Q:"Andante"`, `Q:"Langsam"`, `Q:"Uroczyście"`) sets a typical tempo.
+- The − / + buttons below the tempo transpose the whole piece by semitones (notes, names, sound, tuner); the setting
+  is saved with the piece and sent in share links, the .abc text stays unchanged.
 
 The full cheat sheet is built into the app.
 

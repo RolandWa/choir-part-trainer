@@ -1,5 +1,51 @@
 # Changelog
 
+## 1.1.0 – 2026-10-22
+
+- Transpose the whole piece with the − / + buttons below the tempo (±12 semitones): notes, key signature, note names,
+  sound and tuner follow, abcjs draws it transposed (visualTranspose). The setting is saved with the piece and sent in
+  share links (&t=); the .abc text is not changed.
+- Parts: P:A, P:B (also inline [P:B]) start parts, P: in the header plays them in order (P:ABAB, P:A2B, P:(AB)2C),
+  each with its own repeats and jumps. Warning when the order names a part that does not exist.
+- Fermatas (H before a note, !fermata!, !invertedfermata!, also over a bar line or a rest) are held in all parts:
+  twice as long, at most a half note longer; the metronome waits. !breath! takes a short breath from the end of its
+  note without changing the tempo.
+- clef=tenor and clef=alto are C clefs that sound as written, as in ABC 2.1, abcjs and abcm2ps (clef=tenor used to be
+  read as treble-8). The built-in renderer shows them the modern way. A hint appears when a tenor-clef part looks
+  written an octave high.
+- Tempo words without a number (Q:"Andante", "Allegro moderato", "Langsam", "Nicht zu schnell", "Uroczyście", "Slowly").
+- Syllables: all known limitations fixed and about 80 words added to the tests –
+  Polish ś ź ż + m/n (nie-śmier-tel-na, póź-niej, pójdź-my);
+  German prefixes and compounds before st/sp (er-stan-den, auf-er-stan-den, Ge-stalt, Mor-gen-stern, Bei-spiel; still
+  ges-tern, ers-ten, Kris-tall) and -ie in loanwords (Fa-mi-li-e, Li-li-en; still Me-lo-die);
+  English -ed after consonant + r/l (sa-cred, hun-dred), hymn adjectives (wick-ed, bless-ed, be-lov-ed), ev-ery,
+  soft g (an-gels, man-ger), ie before t (qui-et, pi-e-ty), -ient/-ience (o-be-di-ent), gh (high-est), s + stop
+  (in-spired, de-stroy); Latin u for v (ser-uus) and Hie-ru-sa-lem.
+- Browser tests (tests/browser/run.js, Playwright + Chromium, no internet): 17 checks of the real app – languages,
+  score, voices, warnings, lyrics, playback order and highlighting, synthesizer fallback, transposition, share links,
+  PDF and .abc downloads, collections, recording and tuner with a simulated microphone, warm-ups, note buttons, help.
+  They run on GitHub next to the Node tests (680 checks); an optional step also checks abcjs drawing.
+- In-app help (PL/EN/DE) describes fermatas, breath marks, parts, tempo words, transposition and C clefs.
+- Printing: a line of the full score taller than the rest of page 1 (many parts with several verses) was moved to
+  page 2 by the browser, leaving page 1 with only the title. No line of music is taller than a page any more, and the
+  first one leaves room for the title.
+- PDF download: such a line was cut off at the bottom of the page (the lowest parts were missing). It is now shrunk
+  to fit under the title or on a page of its own; nothing is cut off and no page is ever empty.
+- PDF download: staff lines are as dark as in printing (they were drawn at the 50 % strength used on screen), and a
+  line of music made smaller to fit keeps the thickness of its lines on paper (also when printing).
+- Printing: tuner marks (green, yellow, red notes) and the playback cursor are no longer printed in colour; on paper
+  the notes are black, as in the PDF download. They stay on screen.
+- The invisible tap areas around the notes and the band of the chosen bars got a black frame in the abcjs view
+  (abcjs gives its drawings stroke="currentColor", and the rectangles inherited it): every note was boxed on screen
+  and in printing. They have no frame any more and are not drawn at all when printing (the PDF download never had
+  them). Tapping a note works as before.
+- Tests: the PDF page layout (Node); printing, a too-tall line and a file name with Polish letters (browser); and
+  page-by-page checks of both "Download PDF" and printing for seven kinds of pieces – every page has music, all
+  staves are whole and readable, nothing in the margins, black on white also in dark mode and with tuner marks
+  (tests/browser/page-check.js; printing checks need pdftoppm from poppler-utils); the tap areas around the notes
+  are checked to be invisible on screen and absent from PDF and printed pages, with the built-in drawing and with an
+  abcjs-like drawing (tests/browser/fake-abcjs.js).
+
 ## 1.0.1 – 2026-10-22
 
 - Jumps are played: D.C., D.S. (from the segno S / !segno!), Fine, D.C./D.S. al Fine and al Coda (from the first coda

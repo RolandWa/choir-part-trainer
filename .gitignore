@@ -1,0 +1,3 @@
+# installed only to run the browser tests (npm install --no-save playwright)
+node_modules/
+package-lock.json

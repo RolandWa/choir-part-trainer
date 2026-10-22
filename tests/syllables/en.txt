@@ -65,6 +65,41 @@ Zi-on
 No-el
 po-em
 # known limitations of the English rules (they cannot see pronunciation)
-! an-gels
-! high-est
-! qui-et
+an-gels
+high-est
+qui-et
+# 1.1: -ed after consonant + l/r is a syllable; hymn adjectives in -ed; ev'ry
+sa-cred
+hun-dred
+kin-dred
+of-fered
+a-dored
+liked
+asked
+wick-ed
+bless-ed
+be-lov-ed
+rug-ged
+ev-ery
+# soft g after a e u splits n-g, but ng stays together after i o
+man-ger
+stran-gers
+chan-ging
+sing-er
+long-ing
+# ie before t and in -ient/-ience is two syllables (but pa-tient, an-cient)
+di-et
+pi-e-ty
+so-ci-e-ty
+o-be-di-ent
+ex-pe-ri-ence
+cli-ent
+an-cient
+friend
+sci-ence
+# gh stays with its syllable; s + p t k c starts a syllable after another consonant
+laugh-ing
+in-spired
+con-stant
+de-stroy
+de-scribe

@@ -85,6 +85,8 @@ select,input[type=number]{background:var(--paper);border:1px solid var(--rule);b
 .row input[type=number]{width:72px;text-align:center}
 .tempo input[type=range]{flex:1;min-width:120px;accent-color:var(--cloth)}
 .tempo .val{font-variant-numeric:tabular-nums;min-width:64px;font-weight:650}
+.transp .val{min-width:96px;text-align:center}
+.transp .trb{min-width:40px;font-size:18px;font-weight:700;line-height:1}
 .toggles{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .tg{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;border:1px solid var(--rule);font-size:14px;cursor:pointer;user-select:none;background:var(--paper)}
 .tg input{accent-color:var(--cloth);width:18px;height:18px;margin:0;flex:none}
@@ -148,8 +150,8 @@ input.a4{width:76px;text-align:center}
 .abcwrap svg [stroke]:not([stroke="none"]){stroke:var(--staff)}
 .abcwrap svg .abcjs-lyric{fill:var(--ink)}
 .abcwrap svg .abcjs-annotation{fill:var(--muted)}
-.abcwrap rect.hit{fill:transparent;cursor:pointer}
-.abcwrap rect.rng{fill:var(--rubric-soft)}
+.abcwrap rect.hit{fill:transparent;stroke:none;cursor:pointer}
+.abcwrap rect.rng{fill:var(--rubric-soft);stroke:none}
 .abcwrap .ev.cur:not(.hit),.abcwrap .ev.cur path,.abcwrap .ev.cur text{fill:var(--rubric)}
 .score.pitchmode .abcwrap .ev.cur:not(.hit),.score.pitchmode .abcwrap .ev.cur path,.score.pitchmode .abcwrap .ev.cur text{fill:var(--staff)}
 .score.pitchmode .abcwrap rect.hit.cur{fill:var(--rubric-soft)}
@@ -188,6 +190,8 @@ input.a4{width:76px;text-align:center}
 .lyrnote ul{margin:0 0 6px;padding-left:18px;color:var(--warn-ink)}
 .lyrnote .btnrow{display:flex;flex-wrap:wrap;gap:6px}
 html.pdfmode{--page:#fff;--paper:#fff;--ink:#000;--muted:#444;--rule:#ccc;--staff:#000;--rubric:#000;--rubric-soft:transparent;color-scheme:light}
+/* on paper the staff lines are darker than on screen (same as the print stylesheet) */
+html.pdfmode .sl{opacity:.8}
 
 /* notices + footer */
 .callout{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border-left:4px solid var(--cloth);border-radius:6px;padding:10px 12px;margin:10px 0;font-size:14.5px;line-height:1.5}
@@ -268,8 +272,8 @@ textarea{width:100%;margin-top:8px;font:16px/1.5 ui-monospace,"SF Mono",Menlo,Co
 .lyr{fill:var(--ink);font:12.5px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif}
 .nm{fill:var(--muted);font:italic 11px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif}
 .tup{fill:var(--muted);font:italic 10.5px Georgia,serif}
-.rng{fill:var(--rubric-soft)}
-.hit{fill:transparent;cursor:pointer}
+.rng{fill:var(--rubric-soft);stroke:none}
+.hit{fill:transparent;stroke:none;cursor:pointer}
 .ev.cur .hd,.ev.cur .dot,.ev.cur .rst{fill:var(--rubric)}
 .ev.cur .ho,.ev.cur .stm,.ev.cur .flg,.ev.cur .rsl,.ev.cur .acc{stroke:var(--rubric)}
 .ev.cur .lyr,.ev.cur .nm{fill:var(--rubric);font-weight:700}
@@ -293,8 +297,14 @@ textarea{width:100%;margin-top:8px;font:16px/1.5 ui-monospace,"SF Mono",Menlo,Co
   .pagehead{margin:0;font-size:10.5pt;color:#000}
   .songtitle{font-size:19pt;margin:1mm 0 5mm}
   .score{overflow:visible}
-  .score svg{break-inside:avoid;page-break-inside:avoid}
-  .abcwrap rect.rng,.abcwrap rect.hit{fill:transparent!important}
+  .score svg{break-inside:avoid;page-break-inside:avoid;max-height:262mm}
+  /* a system made smaller to fit the page keeps the thickness of its lines on paper (at normal size nothing changes) */
+  .score svg *{vector-effect:non-scaling-stroke}
+  /* the first system shares page 1 with the title: if it were taller than the rest of the page, the browser would
+     move it to page 2 and leave page 1 with only the title */
+  .score>svg:first-of-type,.score .abcwrap>svg:first-of-type{max-height:240mm}
+  /* tap areas around the notes and the bar-range band are for the screen only */
+  .score rect.hit,.score rect.rng{display:none!important}
   .sl{opacity:.8}
 }
 </style>
@@ -360,6 +370,13 @@ textarea{width:100%;margin-top:8px;font:16px/1.5 ui-monospace,"SF Mono",Menlo,Co
       <input id="tempoR" type="range" min="20" max="240" step="1" data-i18n-aria="tempo">
       <span id="tempoV" class="val"></span>
       <button id="tempoReset" class="btn small" data-i18n="tempoReset"></button>
+    </div>
+    <div class="row tempo transp">
+      <span data-i18n="transp"></span>
+      <button id="trDown" class="btn small trb" data-i18n-aria="trDown">−</button>
+      <span id="trV" class="val"></span>
+      <button id="trUp" class="btn small trb" data-i18n-aria="trUp">+</button>
+      <button id="trReset" class="btn small" data-i18n="trReset"></button>
     </div>
     <div class="row instrow">
       <label for="instSel" data-i18n="inst"></label>
@@ -549,8 +566,8 @@ textarea{width:100%;margin-top:8px;font:16px/1.5 ui-monospace,"SF Mono",Menlo,Co
 </section>
 <button id="tPill" class="tpill" hidden data-i18n-aria="tunTitle"><span id="tPillDot" class="pdot"></span><span id="tPillTxt">–</span></button>
 
-<script src="i18n.js?v=1.0.1"></script>
-<script src="warmups.js?v=1.0.1"></script>
+<script src="i18n.js?v=1.1.0"></script>
+<script src="warmups.js?v=1.1.0"></script>
 <script>
 // ===== PURE START =====
 const LETTERS='CDEFGAB';
@@ -580,12 +597,33 @@ function parseMeter(s){
   if(/^none/i.test(s)) return null;
   return {num:4,den:4,sym:null,bad:true};
 }
+// Tempo words without a number (Q:"Andante") get a typical speed in quarter notes per minute.
+// Longer phrases first, so "sehr langsam" wins over "langsam" and "allegretto" over "allegro".
+const TEMPO_WORDS=[
+  ['allegro moderato',120],['allegro ma non troppo',120],['allegro non troppo',120],['allegro vivace',144],['allegro assai',150],
+  ['andante con moto',92],['andante maestoso',76],['adagio ma non troppo',76],
+  ['nicht zu schnell',108],['nicht schnell',96],['nicht zu langsam',76],['nie za szybko',108],['nie za wolno',76],['not too fast',108],['not too slow',76],
+  ['prestissimo',200],['presto',176],['vivacissimo',172],['vivace',156],['allegretto',116],['allegro',132],['moderato',108],
+  ['andantino',92],['andante',84],['maestoso',80],['adagietto',74],['adagio',70],['larghetto',63],['lento',56],['largo',50],['grave',40],
+  ['sehr schnell',184],['schnell',160],['lebhaft',132],['frisch',126],['bewegt',112],['mäßig',96],['mässig',96],['massig',96],
+  ['gemächlich',80],['ruhig',72],['feierlich',66],['getragen',60],['sehr langsam',46],['langsam',60],
+  ['bardzo szybko',184],['szybko',152],['żywo',132],['umiarkowan',96],['spokojnie',72],['uroczyście',66],['bardzo wolno',46],['wolno',60],['powoli',60],
+  ['very slowly',46],['slowly',60],['slow',60],['gently',72],['moderately',100],['moderate',100],['steadily',96],['lively',132],['brightly',132],['quickly',152],['fast',152]
+];
+function tempoWord(s){
+  const x=String(s||'').toLowerCase();
+  for(const [w,b] of TEMPO_WORDS) if(x.includes(w)) return b;
+  return null;
+}
 function parseTempo(s){
+  const txt=(s||'').match(/"[^"]*"/g)||[];
   s=(s||'').replace(/"[^"]*"/g,'');
   const m=/(\d+)\s*\/\s*(\d+)\s*=\s*(\d+(?:\.\d+)?)/.exec(s);
   if(m&&+m[2]) return {unit:(+m[1])/(+m[2]),bpm:+m[3]};
   const m2=/(\d+(?:\.\d+)?)/.exec(s);
-  return m2?{unit:null,bpm:+m2[1]}:null;
+  if(m2) return {unit:null,bpm:+m2[1]};
+  const w=tempoWord(txt.join(' ')||s);
+  return w?{unit:0.25,bpm:w,word:true}:null;
 }
 function parseKey(str){
   let s=(str||'').trim(), clef=null;
@@ -625,7 +663,12 @@ function beatUnit(meter){ if(!meter) return 0.25; if(meter.den===8&&meter.num%3=
 function normClef(c){
   c=String(c||'').trim().toLowerCase();
   if(!c||c==='none'||c==='treble'||c==='g'||c==='g2') return {clef:'treble',ok:true};
-  if(/^treble[-_]?8$/.test(c)||c==='tenor'||c==='g-8') return {clef:'treble-8',ok:true};
+  if(/^treble[-_]?8$/.test(c)||c==='g-8') return {clef:'treble-8',ok:true};
+  // C clefs: tenor (C on the 4th line) and alto (C on the 3rd line) sound as written, like in abcjs and abcm2ps
+  if(/^(tenor\d?|c4)$/.test(c)) return {clef:'tenor',ok:true};
+  if(/^(alto\d?|c|c3)$/.test(c)) return {clef:'alto',ok:true};
+  if(/^alto[+^]8$/.test(c)) return {clef:'alto',ok:true,o8:1};
+  if(/^alto[-_]8$/.test(c)) return {clef:'alto',ok:true,o8:-1};
   if(/^(treble|g)[+^]8$/.test(c)) return {clef:'treble',ok:true,o8:1};
   if(/^(bass|f)[+^]8$/.test(c)) return {clef:'bass',ok:true,o8:1};
   if(/^(bass|f)[-_]8$/.test(c)) return {clef:'bass',ok:true,o8:-1};
@@ -636,6 +679,8 @@ function normClef(c){
 function clefInfo(clef){
   if(clef==='bass') return {type:'bass',bottom:18,shift:0};
   if(clef==='treble-8') return {type:'treble8',bottom:30,shift:0};
+  // the built-in renderer shows C clefs the modern way: tenor on a treble-8 staff (an octave up), alto on a treble staff
+  if(clef==='tenor') return {type:'treble8',bottom:30,shift:7};
   return {type:'treble',bottom:30,shift:0};
 }
 function keySteps(ci,fi){
@@ -717,7 +762,8 @@ function readNote(s,i){
 function parseABC(text){
   const R={title:'',composer:'',meter:{num:4,den:4,sym:null},unit:null,tempo:null,fifths:0,voices:[],warnings:[],lines:[],words:[]};
   const vmap={}, comps=[];
-  let V=null, inBody=false, gMeter=R.meter, gKey=0, gClef=null, gO8=0, gOct=null, gTr=null, lineSeen=new Set();
+  let V=null, inBody=false, gMeter=R.meter, gKey=0, gClef=null, gO8=0, gOct=null, gTr=null, kSeen=false, lineSeen=new Set();
+  R.parts=[]; R.partSpec=null; R.partOrder=null;
   let curLineStart=0, curLineIdx=0, tokStart=0, titleIsFirst=false, lastField=null, blankAfterBody=false, xCount=0;
   const warn=(k,p)=>{ const v=V?V.id:null, key=k+'|'+JSON.stringify(p||{})+'|'+v; if(R.warnings.length<10&&!R.warnings.some(w=>w._k===key)) R.warnings.push({k,p:p||{},v,_k:key}); };
   const unitLen=()=>R.unit||defaultUnit(R.meter);
@@ -760,6 +806,7 @@ function parseABC(text){
     else if(k==='Q'){ const tq=parseTempo(v); if(tq&&!R.tempo) R.tempo=tq; }
     else if(k==='K'){
       const kk=parseKey(v); if(!kk.ok) warn('w.badKey',{v});
+      if(!inBody) kSeen=true;
       if(!inBody){
         gKey=kk.fifths; R.fifths=kk.fifths;
         if(kk.clef){ const nc=normClef(kk.clef); if(!nc.ok) warn('w.clef',{c:kk.clef}); gClef=nc.clef; gO8=nc.o8||0; }
@@ -776,10 +823,25 @@ function parseABC(text){
       }
     }
     else if(k==='V') applyV(v);
+    else if(k==='P'){
+      // P: in the header is the order of the parts (P:ABAB, P:A2B, P:(AB)2C); in the body it starts part A, B, ...
+      if(!kSeen&&!inBody){ R.partSpec=v; return; }
+      const lm=/^\s*([A-Za-z])/.exec(v); if(!lm) return;
+      const label=lm[1].toUpperCase(); if(R.parts.some(x=>x.label===label)) return;
+      const vs=V, m=!vs?0:(vs.cur&&vs.cur.events.length?vs.measures.length:vs.cur?vs.cur.idx:vs.measures.length);
+      R.parts.push({label,m});
+    }
   }
   function voiceOctave(v){ return v.octave!=null?v.octave:v.kOct!=null?v.kOct:(gOct||0); }
   function voiceTranspose(v){ return v.transp!=null?v.transp:v.kTr!=null?v.kTr:(gTr||0); }
   function addJump(ty){ if(ty){ (V.pendJ=V.pendJ||[]).push(ty); } }
+  // a decoration (!name! or +name+) or a text above the notes: fermata, breath mark or a jump (D.C., Fine, segno ...)
+  function addDeco(name){
+    const x=String(name||'').trim().toLowerCase();
+    if(x==='fermata'||x==='invertedfermata'){ V.pendFerm=true; return; }
+    if(x==='breath'){ V.pendBreath=true; return; }
+    addJump(jumpKind(name));
+  }
   function newMeasure(){
     const v=V;
     if(v.pendVolta) v.curVolta=v.pendVolta;
@@ -790,6 +852,8 @@ function parseABC(text){
   function closeBar(t,vol){
     const v=V;
     if(v.pendJ&&v.pendJ.length){ const mm=v.cur||v.measures[v.measures.length-1]; if(mm){ for(const ty of v.pendJ) v.jumps.push({type:ty,m:mm.idx,at:'end'}); v.pendJ=[]; } }
+    // a fermata or breath mark written on the bar line belongs to the last note before it
+    if(v.lastEv&&(v.pendFerm||v.pendBreath)){ if(v.pendFerm) v.lastEv.fermata=true; if(v.pendBreath) v.lastEv.breath=true; v.pendFerm=v.pendBreath=false; }
     const endRep=t[0]===':', startRep=t.length>1&&t[t.length-1]===':';
     let type='single';
     if(t.includes('||')) type='double'; else if(t.includes('|]')||t.includes('[|')) type='final';
@@ -812,6 +876,8 @@ function parseABC(text){
     if(v.tupRemain>0){ dur*=v.tupFactor; tid=v.curTup; tn=v.curTupN; v.tupRemain--; }
     const ev={i:v.events.length,kind,notes:[],dur,pos:v.pos,measure:v.cur.idx,beamBreak:v.beamBreak,tieNext:false,tieFromPrev:false,lyrics:[],tup:tid,tupN:tn,c0:curLineStart+tokStart,li:curLineIdx,slurStart:v.pendSlur||0,slurEnd:0,lg:v.lgN};
     v.pendSlur=0;
+    if(v.pendFerm){ ev.fermata=true; v.pendFerm=false; }
+    if(v.pendBreath){ ev.breath=true; v.pendBreath=false; }
     if(extra) Object.assign(ev,extra);
     if(kind==='note'){
       const ln=v.lastNote, tieSrc=(ln&&ln.tieNext&&v.lastEv===ln)?ln:null;
@@ -881,7 +947,7 @@ function parseABC(text){
       if(c==='%') break;
       if(c===' '||c==='\t'){ V.beamBreak=true; i++; continue; }
       if(c==='"'){ const e=s.indexOf('"',i+1); if(e>0) addJump(jumpKind(s.slice(i+1,e).replace(/^[\^_<>]|^@[^ ]*\s*/,''))); i=e<0?s.length:e+1; continue; }
-      if(c==='!'||c==='+'){ const e=s.indexOf(c,i+1); if(e>0) addJump(jumpKind(s.slice(i+1,e))); i=e<0?i+1:e+1; continue; }
+      if(c==='!'||c==='+'){ const e=s.indexOf(c,i+1); if(e>0) addDeco(s.slice(i+1,e)); i=e<0?i+1:e+1; continue; }
       if(c==='$'){ i++; continue; }
       if(c==='{'){ const e=s.indexOf('}',i+1); i=e<0?s.length:e+1; continue; }
       if(c==='|'||(c===':'&&(s[i+1]===':'||s[i+1]==='|'))||(c==='['&&s[i+1]==='|')){
@@ -947,7 +1013,7 @@ function parseABC(text){
       }
       // H right before a note, chord, slur or another decoration is the fermata sign (ABC 2.1, 4.14);
       // H followed by a space, a length or an octave mark is most likely the German/Polish note H
-      if(c==='H'&&/^[\^_=A-Ga-gzx\[({"!+.~HLMOPSTJRuv]/.test(s[i+1]||'')){ i++; continue; }
+      if(c==='H'&&/^[\^_=A-Ga-gzx\[({"!+.~HLMOPSTJRuv]/.test(s[i+1]||'')){ V.pendFerm=true; i++; continue; }
       if(c==='H'||c==='h'){ warn('w.H'); i++; while(s[i]===','||s[i]==="'") i++; continue; }
       if(c==='O'){ addJump('coda'); i++; continue; }
       if(c==='S'){ addJump('segno'); i++; continue; }
@@ -985,7 +1051,7 @@ function parseABC(text){
       if(k==='X'&&++xCount===2) warn('w.multi');
       if(k==='w'){ info.kind='lyrics'; info.voice=V?V.id:null; if(V) applyLyrics(v); return; }
       if(k==='W'){ info.kind='words'; R.words.push(decodeAbcText(stripComment(v)).replace(/\s+$/,'')); return; }
-      if('TCMLQKV'.includes(k)) applyField(k,v);
+      if('TCMLQKVP'.includes(k)) applyField(k,v);
       info.kind=inBody?'bodyfield':'header';
       if((k==='V'||inBody)&&V) info.voice=V.id;
       return;
@@ -1010,7 +1076,14 @@ function parseABC(text){
     // sounding pitch = 12*(octave+1)+semitone of the written note + soundShift (used for previews)
     vs.soundShift=12*voiceOctave(vs)+voiceTranspose(vs)+cs;
     if(vs.pendJ&&vs.pendJ.length&&vs.measures.length){ for(const ty of vs.pendJ) vs.jumps.push({type:ty,m:vs.measures.length-1,at:'end'}); }
-    delete vs.pendJ;
+    if(vs.lastEv&&(vs.pendFerm||vs.pendBreath)){ if(vs.pendFerm) vs.lastEv.fermata=true; if(vs.pendBreath) vs.lastEv.breath=true; }
+    delete vs.pendJ; delete vs.pendFerm; delete vs.pendBreath;
+    // clef=tenor is the C clef (sounds as written). A part written an octave high (as for treble-8) is probably a mistake.
+    if(vs.clef==='tenor'){
+      const ms=[]; for(const ev of vs.events) for(const n of ev.notes) ms.push(n.midi);
+      ms.sort((a,b)=>a-b);
+      if(ms.length&&ms[ms.length>>1]>=67) warn('w.tenorClef');
+    }
     V=vs;
     const M=vs.measures, full=m=>m.meter?m.meter.num/m.meter.den:null;
     let startNo=1;
@@ -1027,6 +1100,11 @@ function parseABC(text){
   V=null;
   const ne=R.voices.filter(v=>v.measures.length);
   if(ne.length>1&&ne.some(v=>v.measures.length!==ne[0].measures.length)) warn('w.bars',{list:ne.map(v=>(v.name||v.id)+': '+v.measures.length).join(', ')});
+  if(R.partSpec!=null&&R.parts.length){
+    const order=expandPartSpec(R.partSpec), known=new Set(R.parts.map(x=>x.label)), miss=[...new Set(order.filter(x=>!known.has(x)))];
+    if(miss.length) warn('w.part',{p:miss.join(', ')});
+    const ok=order.filter(x=>known.has(x)); R.partOrder=ok.length?ok:null;
+  }
   // D.C. / D.S. / Fine / Coda marks of all parts, by bar (a mark written in one part applies to the whole piece)
   const seenJ=new Set(); R.jumps=[];
   for(const vs of R.voices) for(const j of vs.jumps){ const k=j.type+'|'+j.m+'|'+j.at; if(!seenJ.has(k)){ seenJ.add(k); R.jumps.push(j); } }
@@ -1094,6 +1172,93 @@ function playOrder(M,J){
   return seq;
 }
 
+// ----- P: parts -----
+// "ABAB", "A2B", "(AB)2C", "A.B.A" -> ['A','B','A','B'] ... (ABC 2.1, 3.1.10; dots are only separators)
+function expandPartSpec(spec){
+  const s=String(spec||'').replace(/[\s.]/g,''); let i=0, guard=0;
+  if(!/^[A-Z0-9()]+$/.test(s)||!/[A-Z]/.test(s)) return [];
+  function seq(){
+    const out=[];
+    while(i<s.length&&s[i]!==')'&&guard++<1000){
+      let item;
+      if(s[i]==='('){ i++; item=seq(); if(s[i]===')') i++; }
+      else if(/[A-Z]/.test(s[i])){ item=[s[i]]; i++; }
+      else { i++; continue; }
+      const m=/^\d+/.exec(s.slice(i)); let n=1; if(m){ n=Math.max(1,Math.min(+m[0],20)); i+=m[0].length; }
+      for(let k=0;k<n&&out.length<400;k++) out.push(...item);
+    }
+    return out;
+  }
+  return seq().slice(0,400);
+}
+// Bars in the order of P: (each part with its own repeats and jumps). Bars before the first part label are played first.
+function partsOrder(M,R){
+  const n=M.length, P=R.parts.slice().sort((a,b)=>a.m-b.m), seq=[];
+  const range=lab=>{ const k=P.findIndex(x=>x.label===lab); if(k<0) return null; return [Math.min(P[k].m,n),k+1<P.length?Math.min(P[k+1].m,n):n]; };
+  const play=(a,b)=>{ if(b<=a) return; const J=(R.jumps||[]).filter(j=>j.m>=a&&j.m<b).map(j=>Object.assign({},j,{m:j.m-a})); for(const k of playOrder(M.slice(a,b),J)) seq.push(k+a); };
+  if(P.length&&P[0].m>0) play(0,Math.min(P[0].m,n));
+  for(const lab of R.partOrder){ const r=range(lab); if(r) play(r[0],r[1]); }
+  return seq;
+}
+// ----- fermata -----
+// A fermata stretches the time of its note (in every part, so the parts stay together): the note lasts twice as long,
+// but at most half a whole note longer. Intervals are positions inside one bar: [{a,b,e}] = from a to b, e extra.
+const FERMATA_MAX=0.5;
+function fermataIntervals(VS,mi){
+  const iv=[];
+  for(const v of VS){ const m=v.measures[mi]; if(!m) continue; for(const ev of m.events) if(ev.fermata&&ev.dur>0){ const a=ev.pos-m.startPos; iv.push({a,b:a+ev.dur}); } }
+  if(!iv.length) return null;
+  iv.sort((x,y)=>x.a-y.a);
+  const out=[];
+  for(const x of iv){ const l=out[out.length-1]; if(l&&x.a<=l.b+1e-9) l.b=Math.max(l.b,x.b); else out.push({a:x.a,b:x.b}); }
+  for(const x of out) x.e=Math.min(x.b-x.a,FERMATA_MAX);
+  return out;
+}
+// position inside a bar -> position in played time (whole notes), with the fermatas of that bar stretched
+function warpAt(iv,x){
+  if(!iv) return x;
+  let y=x;
+  for(const s of iv){ if(x<=s.a) break; y+=s.e*Math.min(1,(x-s.a)/(s.b-s.a)); }
+  return y;
+}
+// a breath mark (!breath!) takes this much time from the end of its note (half the note at most)
+const BREATH_MAX=0.125;
+// ----- transposition of the whole piece -----
+// Key signature with the fewest accidentals for the new key (F#/Gb: keeps the side of the original key),
+// and how many letter steps the notes move.
+function keyForTranspose(fifths,t){
+  if(!t) return {fifths,d:0};
+  const pc=((fifths*7)%12+12)%12, L=((fifths*4)%7+7)%7, npc=((pc+t)%12+12)%12;
+  let best=null;
+  for(let f=-7;f<=7;f++){
+    if(((f*7)%12+12)%12!==npc) continue;
+    if(best==null||Math.abs(f)<Math.abs(best)||(Math.abs(f)===Math.abs(best)&&(fifths<0?f<0:f>0))) best=f;
+  }
+  const nL=((best*4)%7+7)%7, d0=((nL-L)%7+7)%7, target=t*7/12;
+  let d=d0; for(let k=-4;k<=4;k++){ const c=d0+7*k; if(Math.abs(c-target)<Math.abs(d-target)) d=c; }
+  return {fifths:best,d};
+}
+const ACC_SYM={'-2':'bb','-1':'b','0':'n','1':'#','2':'x'};
+function natMidi(step){ const o=Math.floor(step/7), l=LETTERS[((step%7)+7)%7]; return 12*o+SEMI[l]; }
+// Moves every note of the parsed piece by t semitones, both the sound and the written notes (letters, accidentals,
+// key signatures), so the built-in renderer, the note names and the tuner all follow. abcjs gets visualTranspose.
+function transposeParsed(R,t){
+  t=Math.round(t||0); if(!t) return R;
+  for(const v of R.voices){
+    const kt=keyForTranspose(v.fifths,t);
+    for(const ev of v.events) for(const n of ev.notes){
+      let st=n.step+kt.d, al=n.alter+t-(natMidi(st)-natMidi(n.step));
+      while(al>2){ st++; al-=natMidi(st)-natMidi(st-1); }
+      while(al<-2){ st--; al+=natMidi(st+1)-natMidi(st); }
+      n.step=st; n.letter=LETTERS[((st%7)+7)%7]; n.alter=al; n.midi+=t;
+      if(n.acc) n.acc=ACC_SYM[al];
+    }
+    v.fifths=kt.fifths; v.soundShift=(v.soundShift||0)+t;
+  }
+  R.fifths=keyForTranspose(R.fifths,t).fifths; R.transpose=t;
+  return R;
+}
+
 function expandRepeats(M){
   const n=M.length, seq=[]; let i=0, repStart=0, second=false, guard=0; const used=new Set();
   while(i<n&&guard++<20000){
@@ -1122,23 +1287,26 @@ function buildTimeline(R,vi,fromNo,toNo){
     const a=fromNo!=null?fromNo:M[0].number, b=toNo!=null?toNo:M[M.length-1].number;
     const lo=Math.min(a,b), hi=Math.max(a,b);
     seq=M.filter(m=>m.number>=lo&&m.number<=hi).map(m=>m.idx);
-  } else seq=playOrder(M,R.jumps);
+  } else seq=R.partOrder&&R.parts&&R.parts.length?partsOrder(M,R):playOrder(M,R.jumps);
   if(!seq.length) return null;
-  const items=[], audio=[], segs=[], starts=[]; let t=0;
-  for(const mi of seq){ starts.push(t); segs.push({mi,start:t,len:M[mi].len,meter:M[mi].meter}); t+=M[mi].len; }
+  const items=[], audio=[], segs=[], starts=[], ivs={}; let t=0;
+  const ivOf=mi=>(mi in ivs)?ivs[mi]:(ivs[mi]=fermataIntervals(VS,mi));
+  for(const mi of seq){ const iv=ivOf(mi), L=warpAt(iv,M[mi].len); starts.push(t); segs.push({mi,start:t,len:L,rawLen:M[mi].len,meter:M[mi].meter,iv}); t+=L; }
   VS.forEach((v,j)=>{
     const open={};
     seq.forEach((mi,k)=>{
       const m=v.measures[mi]; if(!m) return;
+      const iv=segs[k].iv;
       for(const ev of m.events){
-        const st=starts[k]+(ev.pos-m.startPos);
-        if(j===vi) items.push({ev:ev.i,start:st,dur:ev.dur});
+        const a0=ev.pos-m.startPos, w0=warpAt(iv,a0), st=starts[k]+w0, du=warpAt(iv,a0+ev.dur)-w0;
+        if(j===vi) items.push({ev:ev.i,start:st,dur:du});
         if(ev.kind!=='note') continue;
         for(const n of ev.notes){
           const o=open[n.midi];
-          if(ev.tieFromPrev&&o&&near(o.start+o.dur,st)) o.dur+=ev.dur;
-          else { const a={v:j,midi:n.midi,start:st,dur:ev.dur}; audio.push(a); open[n.midi]=a; }
+          if(ev.tieFromPrev&&o&&near(o.start+o.dur,st)) o.dur+=du;
+          else { const a={v:j,midi:n.midi,start:st,dur:du}; audio.push(a); open[n.midi]=a; }
         }
+        if(ev.breath&&!ev.tieNext){ const cut=Math.min(du/2,BREATH_MAX); for(const n of ev.notes){ const o=open[n.midi]; if(o) o.dur=Math.max(o.dur-cut,o.dur/4); } }
         if(!ev.tieNext) for(const n of ev.notes) delete open[n.midi];
       }
     });
@@ -1150,9 +1318,10 @@ function buildTimeline(R,vi,fromNo,toNo){
 function clickTimes(tl){
   const out=[];
   for(const sg of tl.segs){
-    const beat=beatUnit(sg.meter), fl=sg.meter?sg.meter.num/sg.meter.den:sg.len;
-    const off=sg.len-fl;
-    for(let k=0;k<96;k++){ const p=off+k*beat; if(p>sg.len-EPS) break; if(p<-EPS) continue; out.push({t:sg.start+p,acc:k===0}); }
+    const L=sg.rawLen!=null?sg.rawLen:sg.len;
+    const beat=beatUnit(sg.meter), fl=sg.meter?sg.meter.num/sg.meter.den:L;
+    const off=L-fl;
+    for(let k=0;k<96;k++){ const p=off+k*beat; if(p>L-EPS) break; if(p<-EPS) continue; out.push({t:sg.start+warpAt(sg.iv,p),acc:k===0}); }
   }
   return out;
 }
@@ -1486,7 +1655,7 @@ function lyrLangScores(text){
 }
 const lyrBase=ch=>ch.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const LYR_MERGE={pl:[],de:['ei','ai','au','eu','äu','ie','ee','aa','oo','ey','ay'],en:['ai','ay','au','ea','ee','ei','ey','ie','oa','oi','oo','ou','oy','ue','ui','eu'],la:['ae','oe','au'],xx:null};
-const LYR_DIGRAPH={pl:['ch','cz','sz','rz','dz'],de:['sch','ch','ck','ph','th','qu'],en:['ch','sh','th','ph','wh','gh','ck','ng','qu','gu'],la:['ch','ph','th','qu','gu'],xx:['ch','sh','th','ph','qu']};
+const LYR_DIGRAPH={pl:['ch','cz','sz','rz','dź','dż','dz'],de:['sch','ch','ck','ph','th','qu'],en:['ch','sh','th','ph','wh','gh','ck','ng','qu','gu'],la:['ch','ph','th','qu','gu'],xx:['ch','sh','th','ph','qu']};
 // Liturgical Latin, after the Solesmes rules (Études grégoriennes XLIII, 2016; Gregorio's hyphen-la) and the Liber Usualis:
 // i and u before a vowel can be consonants (Ie-su, e-ius, ad-iu-to-ri-um, qui, san-guis, sua-vis); ae, oe, au are one
 // syllable, eu only in heu/seu/ceu/neu and Greek Eu-; cui and huic are two (cu-i, hu-ic); ch ph th qu gu gn are never
@@ -1505,7 +1674,9 @@ function lyrSyllabifyLa(word){
     if(p==='q') isV[k]=false;
     else if(p==='g'&&k>1&&L[k-2].c==='n'&&nx&&V(nx)) isV[k]=false;
     else if(k===0&&nx&&V(nx)&&nx!=='u') isV[k]=false;
+    else if(nx==='u'&&(p==='r'||p==='l')) isV[k]=false;   // u written for v: ser-uus, par-uus, sal-uus
   }
+  if(/^hier[uo]s/.test(w)) isV[1]=false;                  // Hie-ru-sa-lem, Hie-ro-so-ly-ma (i = j)
   const su=/^(con|man|as)?su(av|ad|es|et)/.exec(w); if(su) isV[(su[1]||'').length+1]=false;
   // i as a consonant (j): at the start before a vowel, between vowels, after ab- ad- con- in- ob- sub- per-
   const pre=/^(ab|ad|con|in|ob|sub|per)i/.exec(w);
@@ -1565,9 +1736,10 @@ const LYR_LATIN=new Set('gloria gratia kyrie eleison alleluia hosanna excelsis d
 const LYR_ONSET={
   // Polish songbook practice: s/ś/sz/z + consonant, stop or fricative + r/l/ł/rz, consonant + w go to the next syllable
   pl(U){
-    const OBS=new Set(['b','p','d','t','k','g','f','w','ch','h','c','cz','dz']), LIQ=new Set(['r','l','ł','rz']), SIB=new Set(['s','z','sz']);
+    const OBS=new Set(['b','p','d','t','k','g','f','w','ch','h','c','cz','dz']), LIQ=new Set(['r','l','ł','rz']), SIB=new Set(['s','z','sz','ś','ź','ż']);
     const ok=U=>{
       if(U.length===1) return true;
+      if(SIB.has(U[0])&&U.length===2&&(U[1]==='m'||(U[1]==='n'&&'szsz'.includes(U[0])))) return true;   // nie-śmier-tel-ny, wio-sna; but póź-niej, pieś-ni
       if(SIB.has(U[0])) return (OBS.has(U[1])||LIQ.has(U[1]))&&ok(U.slice(1));
       if(U[0]==='w'&&SIB.has(U[1])) return ok(U.slice(1));
       return U.length===2&&OBS.has(U[0])&&(LIQ.has(U[1])||U[1]==='w');
@@ -1582,11 +1754,45 @@ const LYR_ONSET={
     return U.length===3&&/^(spr|str|spl|pfr|pfl)$/.test(s);
   }
 };
+// German compounds whose second word starts with st/sp/sch: the word boundary wins over the s-t rule
+// (Mor-gen-stern, Licht-strahl, Gna-den-stuhl; but Kris-tall, Fens-ter)
+const LYR_DE_HEADS=['stern','stall','stimm','stund','strahl','stadt','stamm','stein','strom','stück','stuhl','sturm','straß','strass','streit','stätt','stock','spiel','spruch','sprach','stolz','stätte','stand'];
+// German prefixes before a verb stem with st/sp: er-stan-den, auf-er-stan-den, be-ste-hen, Ge-stalt, zer-stört, Ver-stand
+// (only before these stems, so ers-ten, ges-tern, bes-tens stay as they are)
+const LYR_DE_PRE=['wider','unter','über','nach','auf','aus','bei','ein','mit','vor','zer','ent','emp','ver','hin','her','ab','an','be','er','ge','um','zu'];
+const LYR_DE_STEMS=['stand','stan','stün','steh','stell','staun','stalt','stör','spring','sprung','spran','sprach','spruch','sprech','sprich','stieg','steig','stimm','stärk','stoß','stirb','starb','sterb','storb','strahl','streu','stürz','sturz','spott','spar','spür','starr'];
+// German loanwords where -ie is i-e (Fa-mi-li-e, Li-li-en), unlike Me-lo-die
+const LYR_DE_IE=/(famili|lili|lini|hosti|glori|histori|materi|mysteri|kastani|zeremoni|petersili|tragödi|komödi|itali|spani|^indi|^ari|^seri|^feri|^asi)e(n|ns)?$/;
+// words no rule can predict: lower-case word -> syllables
+const LYR_EXC={en:{science:'sci-ence',sciences:'sci-en-ces',
+  // -ed adjectives sung as a syllable in hymns (but liked, asked stay one syllable)
+  wicked:'wick-ed',naked:'na-ked',wretched:'wretch-ed',rugged:'rug-ged',crooked:'crook-ed',beloved:'be-lov-ed',blessed:'bless-ed',
+  // sung in two syllables in hymns (ev'ry)
+  every:'ev-ery'}};
 function lyrSyllabify(word,lang){
   if(lang==='la') return lyrSyllabifyLa(word);
   if(LYR_LATIN.has(lyrBase(word).replace(/[^a-z]/g,''))) return lyrSyllabifyLa(word);
+  const ex=LYR_EXC[lang]&&LYR_EXC[lang][word.toLowerCase().replace(/[^\p{L}]/gu,'')];
+  if(ex) return lyrApplyPattern(word,ex);
+  if(lang==='de'){
+    const lw=[...word].filter(ch=>/\p{L}/u.test(ch)).join('').toLowerCase(), cs=[...word];
+    const at=k=>{ let seen=0; for(let q=0;q<cs.length;q++){ if(/\p{L}/u.test(cs[q])){ if(seen===k) return q; seen++; } } return -1; };
+    let pk=0; const pc=[];
+    for(let g=0;g<3;g++){ const pre=LYR_DE_PRE.find(x=>lw.startsWith(x,pk)); if(!pre) break; pk+=pre.length; pc.push(pk); }
+    if(pc.length&&LYR_DE_STEMS.some(h=>lw.startsWith(h,pk))){
+      const out=[]; let prev=0;
+      for(const k of pc){ const ci=at(k); out.push(...lyrSyllabify(cs.slice(prev,ci).join(''),lang)); prev=ci; }
+      return out.concat(lyrSyllabify(cs.slice(prev).join(''),lang));
+    }
+    for(let k=2;k<lw.length-3;k++){
+      if(!LYR_DE_HEADS.some(h=>lw.startsWith(h,k))||!/[aeiouyäöü]/.test(lw.slice(0,k))) continue;
+      if(k<4&&!/^(bei|vor|ein|aus|mit|an|um|zu)$/.test(lw.slice(0,k))) continue;   // Bei-spiel, Vor-spiel, An-spruch; but Kris-tall
+      const ci=at(k);
+      if(ci>0) return [...lyrSyllabify(cs.slice(0,ci).join(''),lang),...lyrSyllabify(cs.slice(ci).join(''),lang)];
+    }
+  }
   const chars=[...word], L=[];
-  chars.forEach((ch,i)=>{ if(/\p{L}/u.test(ch)) L.push({c:(lang==='de'&&/[äöüÄÖÜ]/.test(ch))?ch.toLowerCase():(lang==='pl'&&/[łŁ]/.test(ch))?'ł':(lyrBase(ch)[0]||ch.toLowerCase()),i}); });
+  chars.forEach((ch,i)=>{ if(/\p{L}/u.test(ch)) L.push({c:(lang==='de'&&/[äöüÄÖÜ]/.test(ch))?ch.toLowerCase():(lang==='pl'&&/[łŁśŚźŹżŻ]/.test(ch))?ch.toLowerCase():(lyrBase(ch)[0]||ch.toLowerCase()),i}); });
   if(!L.length) return [];
   const n=L.length, w=L.map(x=>x.c).join(''), isV=new Array(n);
   for(let k=0;k<n;k++){ const c=L[k].c; isV[k]='aeiouyäöü'.includes(c)||'æœøå'.includes(c); }
@@ -1610,6 +1816,10 @@ function lyrSyllabify(word,lang){
         const pair=j<e?L[j].c+L[j+1].c:'';
         if(lang==='en'&&j+2<=e&&(L[j].c+L[j+1].c+L[j+2].c==='eau'||(L[j].c+L[j+1].c+L[j+2].c==='eou'&&j>0&&'tgc'.includes(L[j-1].c)))){ nuc.push([j,j+2]); j+=3; continue; }
         let merge=!!pair&&LYR_MERGE[lang].includes(pair)&&j+1!==hiatusAt;
+        if(lang==='de'&&pair==='ie'&&j+2>=n-2&&LYR_DE_IE.test(w)) merge=false;
+        // English ie before t is two syllables (qui-et, di-et, pi-e-ty, so-ci-e-ty); also -ient/-ience after most
+        // consonants (o-be-di-ent, ex-pe-ri-ence, cli-ent), but not after t c s x (pa-tient, an-cient, tran-sient)
+        if(lang==='en'&&pair==='ie'&&(w[j+2]==='t'||(/^ien(t|ts|tly|ce|ces|cy)$/.test(w.slice(j))&&j>0&&!'tcsx'.includes(w[j-1])))) merge=false;
         // English: eau and -teous/-geous are one syllable (beau-ty, righ-teous, gor-geous); oe at the end is one (woe, does, but No-el, po-em); after n g s t c x, ll and v,
         // i + a/o/u is one syllable (Vir-gin-ia, na-tion, pre-cious, mil-lion, Sa-vior, but glo-ri-ous, In-di-a)
         if(lang==='en'&&pair){
@@ -1639,7 +1849,7 @@ function lyrSyllabify(word,lang){
       const ei=last[0], before=ei>0&&!isV[ei-1]?L[ei-1].c:null, tail=w.slice(ei);
       let silent=false;
       if(before&&tail==='e') silent=!(before==='l'&&ei>1&&!isV[ei-2]);
-      else if(before&&tail==='ed') silent=!('td'.includes(before)||(before==='l'&&ei>1&&!isV[ei-2]));
+      else if(before&&tail==='ed') silent=!('td'.includes(before)||((before==='l'||before==='r')&&ei>1&&!isV[ei-2]));   // need-ed, sa-cred, hun-dred
       else if(before&&tail==='es') silent=!('sxzcg'.includes(before)||(before==='h'&&ei>1&&'cs'.includes(L[ei-2].c))||(before==='l'&&ei>1&&!isV[ei-2]));
       if(silent) nuc.pop();
     }
@@ -1657,8 +1867,15 @@ function lyrSyllabify(word,lang){
     let cut;
     if(!U.length) cut=b;
     else if(onset){ let s=U.length-1; while(s>0&&onset(U.slice(s-1).map(u=>u.t))) s--; cut=U[s].s; }
+    else if(U.length===1&&lang==='en'&&U[0].t==='gh') cut=b;   // gh stays with its syllable: high-est, laugh-ing
+    else if(U.length===1&&lang==='en'&&U[0].t==='ng'&&'eiy'.includes(L[b].c)&&'aeu'.includes(L[a-1].c)) cut=U[0].s+1;   // soft g: an-gel, man-ger, chan-ging (but sing-er, long-ing)
     else if(U.length===1) cut=(lang==='en'&&['ck','ng','x'].includes(U[0].t))?b:U[0].s;
-    else { const f=U[U.length-2].t, g=U[U.length-1].t; cut=(['b','c','d','f','g','k','p','t','ch','ph','th'].includes(f)&&(g==='l'||g==='r'))?U[U.length-2].s:U[U.length-1].s; }
+    else {
+      const f=U[U.length-2].t, g=U[U.length-1].t;
+      cut=(['b','c','d','f','g','k','p','t','ch','ph','th'].includes(f)&&(g==='l'||g==='r'))?U[U.length-2].s:U[U.length-1].s;
+      // English s + p t k c (+ r l) after another consonant or as three letters: in-spired, con-stant, de-stroy, de-scribe
+      if(lang==='en'){ const si=U.findIndex((u,i)=>u.t==='s'&&i+1<U.length&&'ptkc'.includes(U[i+1].t)&&(i+2===U.length||(i+3===U.length&&'rl'.includes(U[i+2].t)))); if(si>=0&&(si>0||U.length-si>=3)) cut=U[si].s; }
+    }
     cuts.push(cut);
   }
   // Polish prefixes keep their consonants: roz-cho-dzi, bez-piecz-ny, Naj-święt-sza, od-rzu-cić (but o-dzież, po-dziw)
@@ -1669,6 +1886,16 @@ function lyrSyllabify(word,lang){
   const out=[]; let prev=0;
   for(const c of cuts){ const ci=L[c].i; out.push(chars.slice(prev,ci).join('')); prev=ci; }
   out.push(chars.slice(prev).join(''));
+  return out.filter(x=>x!=='');
+}
+// splits a word by a pattern like 'sci-ence' (letters only), keeping the word's own case and punctuation
+function lyrApplyPattern(word,pat){
+  const sizes=pat.split('-').map(x=>x.length), cs=[...word], out=[]; let cur='', seen=0, part=0;
+  for(const ch of cs){
+    if(/\p{L}/u.test(ch)){ if(part<sizes.length-1&&seen===sizes[part]){ out.push(cur); cur=''; seen=0; part++; } seen++; }
+    cur+=ch;
+  }
+  out.push(cur);
   return out.filter(x=>x!=='');
 }
 function lyrVerses(words){
@@ -1801,6 +2028,23 @@ function abcWithAutoLyrics(R,text){
 
 // Builds the ABC text given to abcjs: only the shown voices, optional note names as "_name" annotations,
 // and a map from each event to its character position in that text.
+// Lays out the systems (lines of music) of the PDF on pages. sizes: [{w,h}] of each system, page: {PW,PH,ML,MT,MB,CW,head}.
+// A system that does not fit in the space left starts a new page; one that is taller than a whole page (or than the space
+// under the title on page 1) is shrunk to fit, so nothing is cut off and the first page never holds only the title.
+function pdfLayout(sizes,pg){
+  const sc=pg.CW/Math.max(1,...sizes.map(x=>x.w)), pages=[[]], bottom=pg.PH-pg.MB, full=bottom-pg.MT; let y=pg.MT+pg.head;
+  sizes.forEach((sz,i)=>{
+    let s=sc, h=sz.h*s;
+    if(h>full){ s*=full/h; h=full; }
+    if(y+h>bottom+1e-6&&pages[pages.length-1].length){ pages.push([]); y=pg.MT; }
+    if(y+h>bottom+1e-6){ s*=(bottom-y)/h; h=bottom-y; }
+    const w=sz.w*s;
+    pages[pages.length-1].push({i,y,h,w,x:s<sc-1e-9?pg.ML+(pg.CW-w)/2:pg.ML});
+    y+=h;
+  });
+  return pages;
+}
+
 function abcDisplay(R,text,show,names,naming){
   const showSet=new Set(show.map(i=>R.voices[i].id));
   const hiding=R.voices.some(v=>v.measures.length&&!showSet.has(v.id));
@@ -1840,7 +2084,7 @@ function abcDisplay(R,text,show,names,naming){
 // e.g. 'https://your-user.github.io/choir-part-trainer/'.
 const SHARE_URL='';
 // Version shown in the footer. tools/release.py updates it together with the ?v= numbers of the script files.
-const APP_VERSION='1.0.1';
+const APP_VERSION='1.1.0';
 // Optional address of the source repository. Leave empty to detect it on GitHub Pages automatically.
 const REPO_URL='';
 
@@ -1974,14 +2218,15 @@ function resolveVi(R){
   if(i<0) i=Math.max(0,vs.findIndex(v=>v.measures.length));
   return i;
 }
-function defOct(clef){ return clef==='bass'?3:4; }
+function defOct(clef){ return clef==='bass'||clef==='tenor'?3:4; }
 function refresh(){
   const R=parseABC(ED.value); S.parsed=R;
   if(S.cur&&!S.cur.noAutoLyr) autoLyrics(R);
+  if(S.cur&&S.cur.transp) transposeParsed(R,S.cur.transp);
   S.vi=resolveVi(R);
   const v=R.voices[S.vi], pk=(v?v.id+'|'+v.clef:'')+'|'+(S.cur?S.cur.id:'');
   if(pk!==S.palKey){ S.palKey=pk; S.pal.oct=defOct(v&&v.clef); }
-  showWarnings(); showHeader(); showLyrNote(); buildVoiceBar(); buildMixer(); renderNow(); updateTempoUI(); syncPal();
+  showWarnings(); showHeader(); showLyrNote(); buildVoiceBar(); buildMixer(); renderNow(); updateTempoUI(); updateTranspUI(); syncPal();
   $('inst2Row').hidden=R.voices.filter(x=>x.measures.length).length<2;
   if(R.voices.every(x=>!x.measures.length)) $('edDetails').open=true;
 }
@@ -2027,7 +2272,7 @@ function showHeader(){
   $('pComposer').textContent=R.composer||'';
   const v=R.voices[S.vi], n=v?v.measures.length:0, k=v?v.fifths:R.fifths;
   const ks=k===0?t('keyNone'):k>0?t('keySharps',{n:k}):t('keyFlats',{n:-k});
-  $('songMeta').textContent=n?[tp('meas',n),ks,R.meter?t('meter',{m:R.meter.num+'/'+R.meter.den}):''].filter(Boolean).join(', '):'';
+  $('songMeta').textContent=n?[tp('meas',n),ks,R.meter?t('meter',{m:R.meter.num+'/'+R.meter.den}):'',R.transpose?t('trMeta',{n:trLabel(R.transpose)}):''].filter(Boolean).join(', '):'';
   document.title=(R.title?R.title+' – ':'')+t('appName');
 }
 function buildVoiceBar(){
@@ -2100,7 +2345,8 @@ function renderAbcjsScore(R,list,forPrint,rv){
     staffwidth:Math.max(250,w-24),
     wrap:{minSpacing:1.8,maxSpacing:2.7,preferredMeasuresPerLine:forPrint?4:3},
     paddingtop:4, paddingbottom:4, paddingleft:2, paddingright:2,
-    foregroundColor:fg, selectionColor:fg, dragging:false
+    foregroundColor:fg, selectionColor:fg, dragging:false,
+    visualTranspose:R.transpose||0
   });
   const tune=tunes&&tunes[0], svgs=Array.from(host.querySelectorAll('svg'));
   if(!tune||!svgs.length) throw new Error('nothing rendered');
@@ -2121,7 +2367,7 @@ function renderAbcjsScore(R,list,forPrint,rv){
       for(const n of nodes){ try{ const b=n.getBBox(); if(b.width||b.height) bb=bbUnion(bb,{x:b.x,y:b.y,w:b.width,h:b.height}); }catch(e){} }
       if(bb&&svg){
         const r=document.createElementNS(SVGNS,'rect');
-        r.setAttribute('class','hit'); r.setAttribute('x',bb.x-5); r.setAttribute('y',bb.y-4); r.setAttribute('width',bb.w+10); r.setAttribute('height',bb.h+8);
+        r.setAttribute('class','hit'); r.setAttribute('stroke','none'); r.setAttribute('x',bb.x-5); r.setAttribute('y',bb.y-4); r.setAttribute('width',bb.w+10); r.setAttribute('height',bb.h+8);
         svg.appendChild(r); nodes.push(r);
         const m=v.measures[ev.measure];
         if(m&&inRange(m.number)) rng.set(svg,bbUnion(rng.get(svg),bb));
@@ -2132,7 +2378,7 @@ function renderAbcjsScore(R,list,forPrint,rv){
   }
   for(const [svg,bb] of rng){
     const vb=svg.viewBox&&svg.viewBox.baseVal, r=document.createElementNS(SVGNS,'rect');
-    r.setAttribute('class','rng'); r.setAttribute('x',bb.x-8); r.setAttribute('width',bb.w+16); r.setAttribute('y',0);
+    r.setAttribute('class','rng'); r.setAttribute('stroke','none'); r.setAttribute('x',bb.x-8); r.setAttribute('width',bb.w+16); r.setAttribute('y',0);
     r.setAttribute('height',vb&&vb.height?vb.height:bb.y+bb.h+12); r.setAttribute('rx',3);
     svg.insertBefore(r,svg.firstChild);
   }
@@ -2150,6 +2396,15 @@ function curBpm(){ return (S.cur&&S.cur.bpm)||baseBpm(); }
 function unitLabel(u){ if(near(u,0.25)) return '♩'; if(near(u,0.375)) return '♩.'; if(near(u,0.125)) return '♪'; if(near(u,0.5)) return '½'; return String(u); }
 function tempoLabel(b,u){ return unitLabel(u==null?tempoUnit():u)+' = '+Math.round(b==null?curBpm():b); }
 function updateTempoUI(){ $('tempoR').value=Math.round(curBpm()); const lab=tempoLabel(); $('tempoV').textContent=lab; $('tempoChip').textContent=lab; }
+// ----- whole-piece transposition (per piece, saved with it, carried in share links) -----
+function curTransp(){ return (S.cur&&S.cur.transp)||0; }
+function trLabel(n){ return n?(n>0?'+':'−')+tp('trSemi',Math.abs(n)):t('trNone'); }
+function updateTranspUI(){ const n=curTransp(); $('trV').textContent=trLabel(n); $('trDown').disabled=n<=-12; $('trUp').disabled=n>=12; $('trReset').disabled=!n; }
+function setTransp(n){
+  if(!S.cur) return; n=Math.max(-12,Math.min(12,Math.round(n)||0)); if(n===curTransp()) return;
+  if(P.playing) stop();
+  S.cur.transp=n||null; scheduleSave(); refresh();
+}
 function setBpm(v){ if(!S.cur) return; v=Math.max(20,Math.min(240,Math.round(v))); S.cur.bpm=(v===Math.round(baseBpm()))?null:v; updateTempoUI(); scheduleSave(); }
 
 // ===== MIXER =====
@@ -2575,7 +2830,7 @@ async function openShare(){
   const base=shareBase(), ta=$('shareUrl');
   S.shareUrl=null;
   if(!base){ ta.hidden=true; $('shareBtns').hidden=true; $('shareInfo').textContent=t('shareNoUrl'); box.scrollIntoView({block:'nearest'}); return; }
-  const url=base+'#id='+encodeURIComponent(S.cur.src||S.cur.id)+'&p='+await encodePiece(ED.value);
+  const url=base+'#id='+encodeURIComponent(S.cur.src||S.cur.id)+(curTransp()?'&t='+curTransp():'')+'&p='+await encodePiece(ED.value);
   S.shareUrl=url; ta.hidden=false; ta.value=url; $('shareBtns').hidden=false;
   $('shareNative').hidden=!navigator.share;
   $('shareInfo').textContent=t('shareLen',{n:url.length})+(url.length>4000?' '+t('shareLong'):'');
@@ -2625,6 +2880,8 @@ async function importHash(h){
   try{ abc=await decodePiece(data); }catch(e){ toast(t('tBadLink')); return null; }
   if(!abc.trim()){ toast(t('tBadLink')); return null; }
   const st=await importPiece(abc,srcId);
+  const tq=q.get('t');
+  if(tq!=null&&/^-?\d{1,2}$/.test(tq)&&S.cur){ const n=Math.max(-12,Math.min(12,+tq)); if(n!==curTransp()){ S.cur.transp=n||null; scheduleSave(); refresh(); } }
   toast(t({same:'tSame',updated:'tUpdated',newVersion:'tNewVersion',added:'tReceived'}[st],{t:titleOf(abc)}));
   return S.cur.id;
 }
@@ -2706,7 +2963,7 @@ function warmVoice(){
   const p=S.set.pref;
   if(p){
     if(p.clef==='bass'||/^bas/i.test(p.name||'')) return 'B';
-    if(p.clef==='treble-8'||/^ten/i.test(p.name||'')) return 'T';
+    if(p.clef==='treble-8'||p.clef==='tenor'||/^ten/i.test(p.name||'')) return 'T';
     if(/^alt/i.test(p.name||'')) return 'A';
   }
   return 'S';
@@ -3117,12 +3374,15 @@ async function exportPdf(){
   try{
     if(!snaps.length) throw new Error('nothing to draw');
     const DPI=200, mm=DPI/25.4, PW=Math.round(210*mm), PH=Math.round(297*mm), ML=15*mm, MT=14*mm, MB=16*mm, CW=PW-2*ML, pt=DPI/72;
-    const sc=CW/Math.max(...snaps.map(x=>x.w)), imgs=[];
-    for(const sn of snaps) imgs.push(await loadImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sn.xml)));
     const hasTitle=snaps.some(x=>x.title), headH=hasTitle?14*pt:44*pt;
-    // lay out systems on pages
-    const pages=[[]]; let y=MT+headH;
-    snaps.forEach((sn,i)=>{ const h=sn.h*sc; if(y+h>PH-MB&&pages[pages.length-1].length){ pages.push([]); y=MT; } pages[pages.length-1].push({i,y,h}); y+=h; });
+    const pages=pdfLayout(snaps.map(x=>({w:x.w,h:x.h})),{PW,PH,ML,MT,MB,CW,head:headH});
+    // a system made smaller to fit keeps the thickness of its lines on paper (at most twice as thick in the drawing)
+    const sc0=CW/Math.max(...snaps.map(x=>x.w)), imgs=[];
+    for(const it of pages.flat()){
+      const r=it.w/(snaps[it.i].w*sc0), sn=snaps[it.i];
+      const xml=r<0.97?sn.xml.replace(/stroke-width:\s*([\d.]+)px/g,(m,v)=>'stroke-width:'+(+v*Math.min(2,1/r)).toFixed(2)+'px'):sn.xml;
+      imgs[it.i]=await loadImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(xml));
+    }
     const out=[], cv=document.createElement('canvas'); cv.width=PW; cv.height=PH;
     const ctx=cv.getContext('2d'), serif='Georgia,"Times New Roman",serif', sans='system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
     for(let pi=0;pi<pages.length;pi++){
@@ -3134,7 +3394,7 @@ async function exportPdf(){
           ctx.textAlign='center'; ctx.font=`bold ${19*pt}px ${serif}`; ctx.fillText(title,PW/2,MT+32*pt,CW);
         }
       }
-      for(const it of pages[pi]) ctx.drawImage(imgs[it.i],ML,it.y,snaps[it.i].w*sc,it.h);
+      for(const it of pages[pi]) ctx.drawImage(imgs[it.i],it.x,it.y,it.w,it.h);
       ctx.fillStyle='#555'; ctx.font=`${8*pt}px ${sans}`; ctx.textAlign='center';
       ctx.fillText(title+(voiceTxt?' – '+voiceTxt:'')+'   '+t('pdfPage',{n:pi+1,k:pages.length}),PW/2,PH-8*mm,CW);
       out.push({jpg:await canvasJpeg(cv),w:PW,h:PH});
@@ -3144,7 +3404,8 @@ async function exportPdf(){
   } catch(e){ console.error('pdf',e); toast(t('tPdfFail')); }
   finally{ S.pdfBusy=false; }
 }
-function preparePrint(){ if(S.printing) return; S.printing=true; stop(); renderNow(true); }
+// on paper the notes are black: tuner marks and the playback cursor stay on screen only (as in the PDF download)
+function preparePrint(){ if(S.printing) return; S.printing=true; stop(); renderNow(true); SC.querySelectorAll('.pk-ok,.pk-warn,.pk-bad,.cur').forEach(e=>e.classList.remove('pk-ok','pk-warn','pk-bad','cur')); }
 function endPrint(){ if(!S.printing) return; S.printing=false; renderNow(); }
 
 // ===== LANGUAGE =====
@@ -3365,6 +3626,9 @@ function wire(){
   $('allBtn').addEventListener('click',()=>{ $('fromIn').value=''; $('toIn').value=''; onRange(); });
   $('tempoR').addEventListener('input',e=>setBpm(+e.target.value));
   $('tempoReset').addEventListener('click',()=>{ if(S.cur){ S.cur.bpm=null; updateTempoUI(); scheduleSave(); } });
+  $('trDown').addEventListener('click',()=>setTransp(curTransp()-1));
+  $('trUp').addEventListener('click',()=>setTransp(curTransp()+1));
+  $('trReset').addEventListener('click',()=>setTransp(0));
   $('slower').addEventListener('click',()=>setBpm(curBpm()-5));
   $('faster').addEventListener('click',()=>setBpm(curBpm()+5));
   [['tMetro','metro'],['tCount','count'],['tOct','oct'],['tNames','names'],['tAbcjs','abcjs']].forEach(([id,k])=>{

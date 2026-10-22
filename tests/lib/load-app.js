@@ -8,7 +8,8 @@ const vm = require('vm');
 const EXPORTS = [
   'parseABC', 'buildTimeline', 'expandRepeats', 'abcDisplay', 'renderScore', 'decodeAbcText', 'stripComment',
   'lyrSyllabify', 'lyrSyllabifyLa', 'lyrSyllables', 'lyrVerses', 'lyrDetectLang', 'lyrLangScores', 'autoLyrics', 'abcWithAutoLyrics',
-  'playOrder', 'jumpPlan', 'jumpKind', 'normClef', 'parseKey'
+  'playOrder', 'jumpPlan', 'jumpKind', 'normClef', 'parseKey', 'parseTempo', 'expandPartSpec', 'partsOrder',
+  'fermataIntervals', 'warpAt', 'keyForTranspose', 'transposeParsed', 'clickTimes', 'nameOf', 'pdfLayout'
 ];
 
 module.exports = function loadApp() {

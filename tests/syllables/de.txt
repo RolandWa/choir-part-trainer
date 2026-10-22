@@ -74,6 +74,34 @@ Ad-ler
 Herr-lich-keit
 # known limitations: these need a dictionary (Fa-mi-li-e vs Har-mo-nie; compounds such as Morgen+stern
 # are split like simple words, Fens-ter → Mor-gens-tern; the number of syllables is right)
-! Mor-gen-stern
-! Fa-mi-li-e
-! Li-li-en
+Mor-gen-stern
+Fa-mi-li-e
+Li-li-en
+# 1.1: prefixes before a verb stem with st/sp keep their boundary; other st words follow the s-t rule
+er-stan-den
+auf-er-stan-den
+Ver-stand
+be-ste-hen
+Ge-stalt
+zer-stört
+er-staunt
+er-starrt
+Um-stand
+Zu-stand
+ers-ten
+ges-tern
+bes-tens
+Schwes-ter
+# compounds with a second word in st/sp: the word boundary wins
+Licht-strahl
+Gna-den-stuhl
+Was-ser-stand
+Bei-spiel
+Vor-spiel
+Kris-tall
+# -ie as i-e in Latin loanwords, but one vowel in Me-lo-die
+Fa-mi-li-en
+Glo-ri-e
+Me-lo-die
+Ma-rie
+Phan-ta-sie

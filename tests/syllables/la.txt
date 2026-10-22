@@ -123,5 +123,13 @@ ex-su-les
 E-ia
 ex-si-li-um
 # known limitations: u written for v after a consonant, silent h in Hierusalem
-! ser-uus
-! Hie-ru-sa-lem
+ser-uus
+Hie-ru-sa-lem
+# 1.1: u written for v after r/l and between vowels; Hie- = Je-
+par-uus
+no-uus
+tu-us
+su-us
+mor-tu-us
+Hie-ro-so-ly-ma
+hi-e-rar-chi-a
